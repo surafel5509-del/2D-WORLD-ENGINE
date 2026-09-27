@@ -60,7 +60,7 @@ interface AnimationActions {
         KeyEditor(clip,frame.toInt(),images,actions)
         clip.tracks.forEach { track ->
             Text("${track.property} · ${track.keys.size} keys")
-            TextButton(onClick={actions.updateClip(clip.copy(tracks=clip.tracks.map { if(it==track)it.copy(interpolation=if(it.interpolation==Interpolation.LINEAR)Interpolation.STEP else Interpolation.LINEAR) else it }))}){Text("Interpolation: ${track.interpolation}")}
+            if(track.property!=TrackProperty.SPRITE)TextButton(onClick={actions.updateClip(clip.copy(tracks=clip.tracks.map { if(it==track)it.copy(interpolation=if(it.interpolation==Interpolation.LINEAR)Interpolation.STEP else Interpolation.LINEAR) else it }))}){Text("Interpolation: ${track.interpolation}")}
             track.keys.sortedBy { it.frame }.forEach { key -> Row {
                 TextButton(onClick={actions.scrubAnimation(key.frame.toFloat())}){Text("${key.frame}: ${key.assetId?.let { images[it] } ?: key.values.joinToString()}")}
                 TextButton(onClick={actions.updateClip(clip.copy(tracks=clip.tracks.mapNotNull { t -> if(t!=track)t else t.copy(keys=t.keys-key).takeIf { it.keys.isNotEmpty() } }))}){Text("Remove")}

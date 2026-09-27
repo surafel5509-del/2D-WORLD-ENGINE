@@ -44,6 +44,7 @@ fun main() {
         input.physical(InputSource.GAMEPAD_AXIS,0,.1f);near(input.snapshot().value("MoveX"),0f)
         input.physical(InputSource.GAMEPAD_AXIS,0,1f);near(input.snapshot().value("MoveX"),1f)
         input.touch("Jump",1f);check("Jump" in input.snapshot().pressed)
+        input.releaseAll();input.snapshot();input.touch("Jump",1f);input.touch("Jump",0f);check("Jump" in input.snapshot().pressed)
     }
     test("real JBox2D falling body rests on ground and supports ray/AABB queries") {
         val floor=body("ground",Vec2(0f,-50f),BodyKind.STATIC,Collider(size=Vec2(600f,20f)))

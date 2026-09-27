@@ -12,6 +12,11 @@ class RuntimeDataTest {
         assertTrue("Jump" in router.snapshot().pressed);assertTrue(router.snapshot().pressed.isEmpty());router.releaseAll();assertTrue("Jump" in router.snapshot().released)
         router.physical(InputSource.KEY,29,1f);router.physical(InputSource.KEY,32,1f);assertEquals(0f,router.snapshot().value("MoveX"))
     }
+    @Test fun quickTapBetweenTicksIsNotLostAndPauseCancelsPendingPress() {
+        val router=InputRouter(InputMap());router.touch("Jump",1f);router.touch("Jump",0f)
+        val tap=router.snapshot();assertTrue("Jump" in tap.pressed);assertTrue("Jump" in tap.released);assertEquals(0f,tap.value("Jump"))
+        router.touch("Jump",1f);router.releaseAll();assertFalse("Jump" in router.snapshot().pressed)
+    }
     @Test fun runtimeComponentsAndInternalPrefabJointRoundTrip() {
         val root=Node(components=listOf(TransformComponent()))
         val a=Node(parent=root.id,components=listOf(TransformComponent(),RigidBodyComponent(kind=BodyKind.STATIC)))

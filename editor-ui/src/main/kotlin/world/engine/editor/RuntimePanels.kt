@@ -30,8 +30,8 @@ import world.engine.math.*
             var horizontal by remember { mutableStateOf(controller.horizontal) };var vertical by remember { mutableStateOf(controller.vertical) };var jumpAction by remember { mutableStateOf(controller.jump) }
             Text("Input controller")
             RuntimeChoice("Mode",controller.kind.name,ControllerKind.entries.map { it.name }){vm.updateNode(node.withComponent(controller.copy(kind=ControllerKind.valueOf(it))))}
-            RuntimeField("Speed (pixels/second)",speed){speed=it};RuntimeField("Jump speed",jump){jump=it}
-            RuntimeField("Horizontal action",horizontal){horizontal=it};RuntimeField("Vertical action",vertical){vertical=it};RuntimeField("Jump action",jumpAction){jumpAction=it}
+            RuntimeField("Speed (pixels/second)",speed){speed=it};if(controller.kind==ControllerKind.PLATFORMER)RuntimeField("Jump speed",jump){jump=it}
+            RuntimeField("Horizontal action",horizontal){horizontal=it};if(controller.kind==ControllerKind.TOP_DOWN)RuntimeField("Vertical action",vertical){vertical=it};if(controller.kind==ControllerKind.PLATFORMER)RuntimeField("Jump action",jumpAction){jumpAction=it}
             TextButton(onClick={vm.parseRuntime { vm.updateNode(node.withComponent(controller.copy(speed=speed.toFloat(),jumpSpeed=jump.toFloat(),horizontal=horizontal,vertical=vertical,jump=jumpAction))) }}){Text("Apply controller")}
             Text("Platformer jump requires a touching, non-sensor support contact. For top-down rigid bodies set gravity scale to zero.",style=MaterialTheme.typography.bodySmall)
             TextButton(onClick={vm.removeRuntimeComponent(InputControllerComponent::class.java)}){Text("Remove controller")}
@@ -60,11 +60,15 @@ import world.engine.math.*
         var gravity by remember { mutableStateOf(body.gravityScale.toString()) };var damping by remember { mutableStateOf(body.linearDamping.toString()) }
         var vx by remember { mutableStateOf(body.velocity.x.toString()) };var vy by remember { mutableStateOf(body.velocity.y.toString()) };var angular by remember { mutableStateOf(body.angularVelocity.toString()) }
         RuntimeChoice("Body",body.kind.name,BodyKind.entries.map { it.name }){vm.updateNode(node.withComponent(body.copy(kind=BodyKind.valueOf(it))))}
-        Toggle("Fixed rotation",body.fixedRotation){vm.updateNode(node.withComponent(body.copy(fixedRotation=it)))}
-        Toggle("Bullet / continuous collision",body.bullet){vm.updateNode(node.withComponent(body.copy(bullet=it)))}
-        RuntimeField("Gravity scale",gravity){gravity=it};RuntimeField("Linear damping",damping){damping=it}
-        RuntimeField("Initial velocity X",vx){vx=it};RuntimeField("Initial velocity Y",vy){vy=it};RuntimeField("Angular velocity degrees/sec",angular){angular=it}
-        TextButton(onClick={vm.parseRuntime { vm.updateNode(node.withComponent(body.copy(gravityScale=gravity.toFloat(),linearDamping=damping.toFloat(),velocity=Vec2(vx.toFloat(),vy.toFloat()),angularVelocity=angular.toFloat()))) }}){Text("Apply body settings")}
+        if(body.kind==BodyKind.DYNAMIC) {
+            Toggle("Fixed rotation",body.fixedRotation){vm.updateNode(node.withComponent(body.copy(fixedRotation=it)))}
+            Toggle("Bullet / continuous collision",body.bullet){vm.updateNode(node.withComponent(body.copy(bullet=it)))}
+            RuntimeField("Gravity scale",gravity){gravity=it};RuntimeField("Linear damping",damping){damping=it}
+        }
+        if(body.kind!=BodyKind.STATIC) {
+            RuntimeField("Initial velocity X",vx){vx=it};RuntimeField("Initial velocity Y",vy){vy=it};RuntimeField("Angular velocity degrees/sec",angular){angular=it}
+        }
+        if(body.kind!=BodyKind.STATIC)TextButton(onClick={vm.parseRuntime { vm.updateNode(node.withComponent(body.copy(gravityScale=gravity.toFloat(),linearDamping=damping.toFloat(),velocity=Vec2(vx.toFloat(),vy.toFloat()),angularVelocity=angular.toFloat()))) }}){Text("Apply body settings")}
         body.colliders.forEachIndexed { index,collider -> ColliderEditor(index,collider,body.colliders.size>1,{ updated -> vm.updateNode(node.withComponent(body.copy(colliders=body.colliders.mapIndexed { i,c -> if(i==index)updated else c }))) },{vm.updateNode(node.withComponent(body.copy(colliders=body.colliders.filterIndexed { i,_->i!=index })))},vm) }
         TextButton(enabled=body.colliders.size<32,onClick={vm.updateNode(node.withComponent(body.copy(colliders=body.colliders+Collider(size=node.sprite?.size ?: Vec2(48f,48f)))))}){Text("Add compound part")}
         TextButton(onClick=draw){Text("Draw convex polygon in viewport")}
@@ -79,13 +83,13 @@ import world.engine.math.*
         var vertices by remember { mutableStateOf(c.vertices.joinToString("; ") { "${it.x},${it.y}" }) };var sensor by remember { mutableStateOf(c.sensor) }
         Text("Collider ${index+1}",style=MaterialTheme.typography.titleMedium)
         RuntimeChoice("Shape",shape.name,ShapeKind.entries.map { it.name }){shape=ShapeKind.valueOf(it)}
-        RuntimeField("Width",width){width=it};RuntimeField("Height (capsule ≥ width)",height){height=it};RuntimeField("Circle radius",radius){radius=it}
+        if(shape==ShapeKind.RECTANGLE || shape==ShapeKind.CAPSULE){RuntimeField("Width",width){width=it};RuntimeField("Height (capsule ≥ width)",height){height=it}};if(shape==ShapeKind.CIRCLE)RuntimeField("Circle radius",radius){radius=it}
         RuntimeField("Offset X",x){x=it};RuntimeField("Offset Y",y){y=it}
         if(shape==ShapeKind.POLYGON)RuntimeField("Convex vertices: x,y; x,y; x,y",vertices){vertices=it}
         RuntimeField("Density kg/m²",density){density=it};RuntimeField("Friction",friction){friction=it};RuntimeField("Restitution 0–1",bounce){bounce=it};Toggle("Sensor (no collision response)",sensor){sensor=it}
         TextButton(onClick={vm.parseRuntime {
             val points=if(shape==ShapeKind.POLYGON)vertices.split(';').map { pair -> val v=pair.trim().split(',');require(v.size==2);Vec2(v[0].trim().toFloat(),v[1].trim().toFloat()) } else emptyList()
-            apply(c.copy(shape=shape,size=Vec2(width.toFloat(),height.toFloat()),radius=radius.toFloat(),offset=Vec2(x.toFloat(),y.toFloat()),density=density.toFloat(),friction=friction.toFloat(),restitution=bounce.toFloat(),sensor=sensor,vertices=points))
+            apply(c.copy(shape=shape,size=if(shape==ShapeKind.RECTANGLE || shape==ShapeKind.CAPSULE)Vec2(width.toFloat(),height.toFloat()) else c.size,radius=if(shape==ShapeKind.CIRCLE)radius.toFloat() else c.radius,offset=Vec2(x.toFloat(),y.toFloat()),density=density.toFloat(),friction=friction.toFloat(),restitution=bounce.toFloat(),sensor=sensor,vertices=points))
         }}){Text("Apply collider")}
         TextButton(enabled=removable,onClick=remove){Text("Remove collider")}
     }
@@ -99,7 +103,7 @@ import world.engine.math.*
         Text("Camera")
         EntityChoice("Follow",follow,scene.nodes,true){follow=it}
         RuntimeField("Smoothing seconds (0 instant)",smoothing){smoothing=it};RuntimeField("Zoom",zoom){zoom=it};RuntimeField("Additional rotation degrees",rotation){rotation=it}
-        RuntimeField("Dead-zone width",dx){dx=it};RuntimeField("Dead-zone height",dy){dy=it}
+        if(follow!=null){RuntimeField("Dead-zone width",dx){dx=it};RuntimeField("Dead-zone height",dy){dy=it}}
         RuntimeField("Limit minimum X (empty = no limits)",minX){minX=it};RuntimeField("Limit minimum Y",minY){minY=it};RuntimeField("Limit maximum X",maxX){maxX=it};RuntimeField("Limit maximum Y",maxY){maxY=it}
         RuntimeChoice("Viewport","${viewport.x},${viewport.y},${viewport.width},${viewport.height}",listOf("Full","Left half","Right half","Top half","Bottom half")){viewport=when(it){"Left half"->CameraViewport(width=.5f);"Right half"->CameraViewport(x=.5f,width=.5f);"Top half"->CameraViewport(height=.5f);"Bottom half"->CameraViewport(y=.5f,height=.5f);else->CameraViewport()}}
         Toggle("Enabled",c.enabled){vm.updateNode(node.withComponent(c.copy(enabled=it)))}
@@ -118,11 +122,11 @@ import world.engine.math.*
     }.focusable().verticalScroll(rememberScrollState()).padding(12.dp)) {
         Text("INPUT MAP",style=MaterialTheme.typography.titleMedium)
         RuntimeField("Action name",action){action=it};RuntimeChoice("Source",source.name,InputSource.entries.map { it.name }){source=InputSource.valueOf(it)}
-        RuntimeField("Android code / axis / mouse button",code){code=it};RuntimeField("Scale (-1 reverses)",scale){scale=it};RuntimeField("Axis dead zone 0–0.95",dead){dead=it}
+        if(source!=InputSource.TOUCH)RuntimeField("Android code / axis / mouse button",code){code=it};RuntimeField("Scale (-1 reverses)",scale){scale=it};if(source==InputSource.GAMEPAD_AXIS)RuntimeField("Axis dead zone 0–0.95",dead){dead=it}
         Text("Gamepad X=0, Y=1, hat X=15/Y=16. Mouse primary=1, secondary=2, middle=4. Touch uses the action name.",style=MaterialTheme.typography.bodySmall)
         TextButton(onClick={listening=!listening}){Text(if(listening)"Listening… press a key (tap to cancel)" else "Listen for key / gamepad button")}
         TextButton(onClick={vm.parseRuntime {
-            val binding=InputBinding(action,source,code.toInt(),scale.toFloat(),dead.toFloat())
+            val binding=InputBinding(action,source,if(source==InputSource.TOUCH)0 else code.toInt(),scale.toFloat(),if(source==InputSource.GAMEPAD_AXIS)dead.toFloat() else .15f)
             val bindings=scene.inputMap.bindings.toMutableList();if(selected in bindings.indices)bindings[selected]=binding else bindings.add(binding)
             vm.editRuntimeScene(scene.copy(inputMap=InputMap(bindings)));selected=-1
         }}){Text(if(selected>=0)"Update binding" else "Add binding")}
@@ -138,13 +142,15 @@ import world.engine.math.*
     var selected by remember { mutableStateOf<String?>(null) };var kind by remember { mutableStateOf(JointKind.DISTANCE) };var a by remember { mutableStateOf<String?>(null) };var b by remember { mutableStateOf<String?>(null) }
     var ax by remember { mutableStateOf("0") };var ay by remember { mutableStateOf("0") };var bx by remember { mutableStateOf("0") };var by by remember { mutableStateOf("0") };var axisX by remember { mutableStateOf("1") };var axisY by remember { mutableStateOf("0") }
     var length by remember { mutableStateOf("100") };var frequency by remember { mutableStateOf("4") };var damping by remember { mutableStateOf("0.7") };var motor by remember { mutableStateOf(false) };var speed by remember { mutableStateOf("0") };var force by remember { mutableStateOf("100") };var limit by remember { mutableStateOf(false) };var lower by remember { mutableStateOf("-45") };var upper by remember { mutableStateOf("45") };var collide by remember { mutableStateOf(false) }
+    var removal by remember { mutableStateOf<JointSpec?>(null) }
+    removal?.let { joint -> AlertDialog(onDismissRequest={removal=null},title={Text("Remove joint?")},text={Text("Remove this ${joint.kind} constraint? This is undoable.")},confirmButton={TextButton(onClick={selected=null;vm.editRuntimeScene(scene.copy(joints=scene.joints.filterNot { it.id==joint.id }));removal=null}){Text("Remove")}},dismissButton={TextButton(onClick={removal=null}){Text("Cancel")}}) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp)) {
         Text("JOINTS",style=MaterialTheme.typography.titleMedium)
         RuntimeChoice("Type",kind.name,JointKind.entries.map { it.name }){kind=JointKind.valueOf(it)}
         EntityChoice("Body A",a,bodies,false){a=it};EntityChoice("Body B",b,bodies,false){b=it}
         RuntimeField("Local anchor A X",ax){ax=it};RuntimeField("Local anchor A Y",ay){ay=it};RuntimeField("Local anchor B X",bx){bx=it};RuntimeField("Local anchor B Y",by){by=it}
-        RuntimeField("Axis X (prismatic/wheel)",axisX){axisX=it};RuntimeField("Axis Y",axisY){axisY=it}
-        RuntimeField("Length / rope max (pixels)",length){length=it};RuntimeField("Spring / wheel frequency Hz",frequency){frequency=it};RuntimeField("Damping ratio",damping){damping=it}
+        if(kind in listOf(JointKind.PRISMATIC,JointKind.WHEEL)){RuntimeField("Axis X (prismatic/wheel)",axisX){axisX=it};RuntimeField("Axis Y",axisY){axisY=it}}
+        if(kind in listOf(JointKind.DISTANCE,JointKind.SPRING,JointKind.ROPE))RuntimeField("Length / rope max (pixels)",length){length=it};if(kind in listOf(JointKind.SPRING,JointKind.WHEEL)){RuntimeField("Spring / wheel frequency Hz",frequency){frequency=it};RuntimeField("Damping ratio",damping){damping=it}}
         Toggle("Collide connected",collide){collide=it}
         if(kind in listOf(JointKind.REVOLUTE,JointKind.PRISMATIC,JointKind.WHEEL)) {
             Toggle("Motor",motor){motor=it};RuntimeField("Motor speed (degrees/sec, prismatic pixels/sec)",speed){speed=it};RuntimeField("Max motor force/torque (SI)",force){force=it}
@@ -157,7 +163,7 @@ import world.engine.math.*
         if(selected!=null)TextButton(onClick={selected=null}){Text("Cancel edit")}
         scene.joints.forEach { j -> Row {
             TextButton(modifier=Modifier.weight(1f),onClick={selected=j.id;kind=j.kind;a=j.bodyA;b=j.bodyB;ax=j.anchorA.x.toString();ay=j.anchorA.y.toString();bx=j.anchorB.x.toString();by=j.anchorB.y.toString();axisX=j.axis.x.toString();axisY=j.axis.y.toString();length=j.length.toString();frequency=j.frequency.toString();damping=j.damping.toString();motor=j.motor;speed=j.motorSpeed.toString();force=j.maxMotorForce.toString();limit=j.limit;lower=j.lower.toString();upper=j.upper.toString();collide=j.collideConnected}){Text("${j.kind}: ${bodies.find { it.id==j.bodyA }?.name} ↔ ${bodies.find { it.id==j.bodyB }?.name}")}
-            TextButton(onClick={selected=null;vm.editRuntimeScene(scene.copy(joints=scene.joints-j))}){Text("Remove")}
+            TextButton(onClick={removal=j}){Text("Remove")}
         } }
     }
 }

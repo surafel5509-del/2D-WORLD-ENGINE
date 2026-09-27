@@ -1,28 +1,41 @@
 package world.engine.core
 
-/** Source values are combined per action; snapshots consume edges, not held state. Thread-safe. */
+/** Source values are combined per action; snapshots consume buffered edges, not held state. */
 data class InputSnapshot(val values: Map<String,Float>,val pressed: Set<String>,val released: Set<String>) {
     fun value(action: String) = values[action] ?: 0f
 }
 class InputRouter(private val mapping: InputMap) {
     private val physical=mutableMapOf<Triple<InputSource,Int,Int>,Float>()
     private val touch=mutableMapOf<String,Float>()
-    private var previous=emptySet<String>()
+    private var active=emptySet<String>()
+    private val pressed=mutableSetOf<String>()
+    private val released=mutableSetOf<String>()
+    private var values=emptyMap<String,Float>()
     @Synchronized fun physical(source: InputSource,code: Int,value: Float,device: Int=0) {
-        require(value.isFinite()); val key=Triple(source,code,device)
+        if(!value.isFinite())return
+        val key=Triple(source,code,device)
         if(value==0f)physical.remove(key) else physical[key]=value.coerceIn(-1f,1f)
+        resolve()
     }
-    @Synchronized fun touch(action: String,value: Float) { require(value.isFinite()); touch[action]=value.coerceIn(-1f,1f) }
-    @Synchronized fun releaseAll() { physical.clear(); touch.clear() }
-    @Synchronized fun snapshot(): InputSnapshot {
-        val values=mutableMapOf<String,Float>()
+    @Synchronized fun touch(action: String,value: Float) {
+        if(!value.isFinite() || mapping.bindings.none { it.source==InputSource.TOUCH && it.action==action })return
+        if(value==0f)touch.remove(action) else touch[action]=value.coerceIn(-1f,1f)
+        resolve()
+    }
+    /** Focus/pause cancellation releases held sources and cannot inject a stale press on resume. */
+    @Synchronized fun releaseAll() { physical.clear();touch.clear();pressed.clear();resolve() }
+    private fun resolve() {
+        val next=mutableMapOf<String,Float>()
         mapping.bindings.forEach { b ->
             val raw=if(b.source==InputSource.TOUCH)touch[b.action] ?: 0f else physical.filterKeys { it.first==b.source && it.second==b.code }.values.sum()
-            val filtered=if(b.source==InputSource.GAMEPAD_AXIS) { val a=kotlin.math.abs(raw); if(a<=b.deadZone)0f else kotlin.math.sign(raw)*(a-b.deadZone)/(1f-b.deadZone) } else raw
-            values[b.action]=((values[b.action] ?: 0f)+filtered*b.scale)
+            val filtered=if(b.source==InputSource.GAMEPAD_AXIS) { val a=kotlin.math.abs(raw);if(a<=b.deadZone)0f else kotlin.math.sign(raw)*(a-b.deadZone)/(1f-b.deadZone) } else raw
+            next[b.action]=(next[b.action] ?: 0f)+filtered*b.scale
         }
-        values.replaceAll { _,v -> v.coerceIn(-1f,1f) }
-        val active=values.filterValues { kotlin.math.abs(it)>.5f }.keys.toSet()
-        val result=InputSnapshot(values.toMap(),active-previous,previous-active); previous=active; return result
+        next.replaceAll { _,v -> v.coerceIn(-1f,1f) }
+        val held=next.filterValues { kotlin.math.abs(it)>.5f }.keys.toSet()
+        pressed.addAll(held-active);released.addAll(active-held);active=held;values=next.toMap()
+    }
+    @Synchronized fun snapshot(): InputSnapshot {
+        val result=InputSnapshot(values,pressed.toSet(),released.toSet());pressed.clear();released.clear();return result
     }
 }
