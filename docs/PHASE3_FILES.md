@@ -6,14 +6,14 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 
 | Path | SHA-256 |
 |---|---|
-| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `df183cba1e727fa5d155d1119376eb2da460e2649979abe3a0145400f3bc7bf6` |
+| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `6846da7e1fa1106002314a8f577b14123d6392737c4b7d32c1c8c90726596b93` |
 | `app/src/main/assets/licenses/JBOX2D.txt` | `2895b20e161e2fcf8ae9cdda59f86cc4e4db9136d5fc453b809ce843bd1d0cd9` |
 | `docs/PHASE2_README.md` | `3708ece381fcec2e27c7ce78cc0e96fb1903187dd977f3f2b02cec1bcd834cf3` |
 | `docs/PHASE3.md` | `861015849dba8afc1a947be82fb8536a3f6c0a86c926cf8f7245004d3c664927` |
 | `docs/PHASE3_BASELINE.json` | `d19f72593a83976aa20dee09180932f51a16ac38c119ef699f9dd3df1f49d7c8` |
 | `docs/PHASE3_FILES.md` | `generated; not self-hashed` |
 | `docs/PHASE3_SOURCE.md` | `generated; not self-hashed` |
-| `docs/PHASE3_VERIFICATION.md` | `acee01002d60d1fbc32aaf9779aa271fd9e59b1750a82b8451ab9df1c28b820c` |
+| `docs/PHASE3_VERIFICATION.md` | `3d1b04d1699ad34621aaa880acb24ff669b6664d587f461c315024f512f20d32` |
 | `editor-animation/src/main/kotlin/world/engine/animationeditor/TimelineEditor.kt` | `9f37aa4d209b30d1a7a950bd3f9b2fb8130d68b83d5a2712745bf80e6c34ae5f` |
 | `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `48100da79f91e10bdc1e73c2614f505d3e1f8f532eea16c3f260f89b7c571838` |
 | `editor-ui/src/main/kotlin/world/engine/editor/RuntimePanels.kt` | `6ecc7fd603996c83994ec3043e70a454fe08e15e05e22aebeebd61cd14ef5aa3` |
@@ -28,21 +28,22 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 | `engine-physics/src/main/kotlin/world/engine/physics/ColliderGeometry.kt` | `c33b1557e2337b1035412449ff63bf8a96ff6525d95f020b586b044d58b3072d` |
 | `engine-physics/src/main/kotlin/world/engine/physics/PhysicsWorld.kt` | `7484b6e64a71f0d1de62fe4f8a003361d2c8964139c312217aa9191ec9d65264` |
 | `engine-physics/src/test/kotlin/world/engine/physics/PhysicsWorldTest.kt` | `c5b6ec7db3b65ffb11400de34df8436a6ed79d4ae083100d6565c6e4570bf148` |
-| `engine-render/src/main/kotlin/world/engine/render/CameraRig.kt` | `1ec04ebf57f98ea7135c1b5d4210110608f9b4f5e8b251da1aeccb0f268bc7e4` |
-| `engine-render/src/test/kotlin/world/engine/render/CameraRigTest.kt` | `c67cbbd0eff9bb64d3b10a46799c012321fc721e279255816bdab62a3d5a06f0` |
+| `engine-render/src/main/kotlin/world/engine/render/CameraRig.kt` | `f58a3549a6058b4ef48d8f8ab868c3374588ca7401a3d852237b6ef3a4e59b73` |
+| `engine-render/src/test/kotlin/world/engine/render/CameraRigTest.kt` | `875b659a14262891c777ceabed3e72320671527453883ac5f083637deff52274` |
 | `tools/RuntimeSmoke.kt` | `295b53a980fd580ab8f836d19cf20fd6c3f23618abb9bc3ea4f4077546902652` |
 | `tools/annotate_ci_failure.py` | `4c1cfaeb9d46a1adc082b3f411ffa7a12c190c5485c6fe03b9f5e0823e1551e0` |
 | `tools/report_ci_results.py` | `c6f19722e022fa015736ef72e1b89153b793f9399f92ab32ce346ee695ca74f9` |
 | `tools/write_phase3_delivery.py` | `da9857724f5677de99644db3cd672b100dc9cf6bc59920b9bdd4dfd73d1257b2` |
 
-## CHANGED — 23 files
+## CHANGED — 24 files
 
 | Path | SHA-256 |
 |---|---|
 | `.github/workflows/android.yml` | `e75928b38b51a351d115fc868f57430e85bb5c47c5b3ea238d20f21e6eb5021b` |
 | `.gitignore` | `8dc14c72d0dda33f5b0b71b55bbfd8ebb5d62ac868713d3b0bc1c048c676931b` |
-| `README.md` | `562ff9b511f98a88c1db8d727a9cf01bfcb69659e69dd3842a29a1a4bbb9aec9` |
+| `README.md` | `cd0ea11c1162dcac0d2ea1a0a81bb8f710c42774461ffe21130a3f43b4c39e4a` |
 | `app/build.gradle.kts` | `1f61fb5f336d157f8b89945f6509c0101584771bee513ad4c3126e2e52527a04` |
+| `app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt` | `def61e6bcf6dd93a949cdaa5908f580a4aae90b449d0e9612ee1b1f0270c0159` |
 | `editor-animation/README.md` | `75e26f1bb73acb29809ab472624578f4ed5525a4e509eb7b8edda5f0889c3853` |
 | `editor-animation/build.gradle.kts` | `6b729348d583a0b0a1534b42b4aeed5604370ed00693b26eb4355b6e50c8d5dd` |
 | `editor-ui/build.gradle.kts` | `3d0e1b82f39a5edbefb303c3e5afcf8984967cee6d1c88e6a7a63f6913676151` |
@@ -63,12 +64,11 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 | `tools/check_engine_standalone.py` | `b29def0b98ae5f366b43b5796899f1675c6d47beb3e46e3c152278fe79207b25` |
 | `tools/validate_structure.py` | `a8369eedb0732fb76ffe6c6790e463a4c5c7386626e116b9f9e1da1957a23cfd` |
 
-## UNCHANGED — 82 files
+## UNCHANGED — 81 files
 
 | Path | SHA-256 |
 |---|---|
 | `app/src/androidTest/kotlin/world/engine/app/EditorSmokeTest.kt` | `13d7226c36de268fa9faaf91b0da01b6879579fc6d5aa8bf018cb4dac6286660` |
-| `app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt` | `61d4760e68f1cc24d5d11bd2cde0ba839bc966daee8db906a4a937a9ba25830b` |
 | `app/src/main/AndroidManifest.xml` | `bc257b5b75ce0167c9550e824a96b3235b0ca6ee311522bc6546f0eda7536b2a` |
 | `app/src/main/kotlin/world/engine/app/MainActivity.kt` | `389e5d7bcbcdaa28d5328a44336ef53b0e8780d471ae3f0eee9aad53520ea3e2` |
 | `app/src/main/res/values/styles.xml` | `04eb151f059d6054eaa700f0783ef7a78cc1f3211819a3f3a0da64f0c3dd713b` |

@@ -11,6 +11,12 @@ class CameraRigTest {
         val restored=c.screenToWorld((clip.x+1)*320,(1-clip.y)*240,640,480)
         assertEquals(p.x,restored.x,.001f);assertEquals(p.y,restored.y,.001f)
     }
+    @Test fun followDoesNotAccumulateHiddenOvershootBeyondLimits() {
+        val target=Node().moved(Vec2(300f,0f));val camera=Node(components=listOf(TransformComponent(),CameraComponent(follow=target.id,smoothing=.1f,deadZone=Vec2(),limitMin=Vec2(-100f,-100f),limitMax=Vec2(100f,100f))))
+        val rig=CameraRig();val scene=Scene(nodes=listOf(target,camera));assertEquals(50f,rig.update(scene,.1f,100,100).single().camera.center.x,.001f)
+        val returned=rig.update(scene.replace(target.moved(Vec2())),.1f,100,100).single().camera.center.x
+        assertTrue(returned in 0f..49f,"Camera must immediately follow a target returning inside its limits")
+    }
     @Test fun limitsIncludeVisibleViewportAndMultipleViewsTransition() {
         val target=Node().moved(Vec2(300f,0f))
         val camera=Node(components=listOf(TransformComponent(),CameraComponent(follow=target.id,smoothing=0f,deadZone=Vec2(),limitMin=Vec2(-100f,-100f),limitMax=Vec2(100f,100f))))

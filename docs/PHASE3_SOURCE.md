@@ -6,6 +6,7 @@ Generated from the actual repository files. Includes implementation, tests, conf
 - `.gitignore` (CHANGED)
 - `README.md` (CHANGED)
 - `app/build.gradle.kts` (CHANGED)
+- `app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt` (CHANGED)
 - `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` (NEW)
 - `app/src/main/assets/licenses/JBOX2D.txt` (NEW)
 - `docs/PHASE2_README.md` (NEW)
@@ -186,23 +187,21 @@ The code files in their modules are authoritative; source appendices are histori
 Install **JDK 17**, Android SDK **34**, and Build Tools **34.0.0**. Open the repository in Android Studio (Koala or newer), select Gradle JDK 17, configure the Android SDK location, sync and run `app` on an Android 7+ device with GLES 3 support.
 
 ```sh
-./gradlew :engine-math:test :engine-core:test :app:assembleDebug
+./gradlew :engine-math:test :engine-core:test :engine-animation:testDebugUnitTest :engine-physics:testDebugUnitTest :engine-render:testDebugUnitTest :app:assembleDebug
 ./gradlew :app:installDebug
-./gradlew :engine-assets:connectedDebugAndroidTest :engine-io:connectedDebugAndroidTest :app:connectedDebugAndroidTest
+./gradlew :engine-physics:connectedDebugAndroidTest :engine-assets:connectedDebugAndroidTest :engine-io:connectedDebugAndroidTest :app:connectedDebugAndroidTest
 ```
 
 Gradle 8.7, AGP 8.5.2, Kotlin 1.9.24; minimum SDK 24, target/compile SDK 34. Initial development-tool/dependency downloads need connectivity; editor operation is offline. On Windows use `gradlew.bat`.
 
-Successful Gradle packaging produces `app/build/outputs/apk/debug/app-debug.apk`. **No APK was produced in this session.** The Android CI workflow is supplied but has not been run here.
+Successful Gradle packaging produces `app/build/outputs/apk/debug/app-debug.apk`. **The full Gradle/Compose build has passed in GitHub Actions and produced a real debug APK artifact.** See the [verification ledger](docs/PHASE3_VERIFICATION.md) for exact revisions, test results and artifact links; no signed standalone-game export is claimed.
 
 ## Validation actually performed
 
-- Standalone Kotlin **1.9.23** compilation of math, core, assets, IO, renderer and viewport against Android API 34, with serialization generation: **passed**. This diagnostic compiler is not the pinned Gradle/Kotlin 1.9.24 app toolchain.
-- Six executable core smoke checks, including nested overrides and JSON serialization: **passed**.
-- Host SQLite checks executing the production DDL: **passed**.
-- Repository/module/XML/wrapper/source-presence checks: **passed**.
-- Full Gradle build: **blocked by Gradle distribution TLS/download failure**, after obtaining a temporary Java 17 runtime. Android SDK installation and Compose/AndroidX build dependencies are unavailable in this sandbox.
-- JUnit, Android bitmap/SQLite tests, Compose tests, physical touch/drop tests and GL device tests: **not run**.
+- Eight separately compiled engine/runtime modules and **16 executable core/runtime smoke groups**: passed, using actual JBox2D and Android 34 APIs.
+- Full pinned-toolchain Gradle/Compose build, debug APK/test APK assembly, and JVM unit tasks: passed in CI; exact revisions/results are recorded in the verification ledger.
+- Host SQLite and repository/module/XML/wrapper checks: passed.
+- Emulator acceptance is recorded separately in the ledger. Physical phone/tablet/gamepad and sustained-performance checks remain unverified.
 
 ## Data safety
 
@@ -247,12 +246,75 @@ dependencies {
 }
 ````
 
+## app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt
+
+````kotlin
+package world.engine.app
+
+import android.opengl.EGL14.*
+import android.opengl.GLES30.*
+import org.junit.Assert.*
+import org.junit.Test
+import world.engine.core.*
+import world.engine.math.*
+import world.engine.render.*
+import java.nio.ByteBuffer
+
+/** Real offscreen GLES 3 render/readback; requires an ES 3-capable device or emulator. */
+class GlRenderTest {
+    private fun withGl(block: (SceneRenderer)->Unit) {
+        val display=eglGetDisplay(EGL_DEFAULT_DISPLAY);val version=IntArray(2)
+        assertTrue(eglInitialize(display,version,0,version,1))
+        val configs=arrayOfNulls<android.opengl.EGLConfig>(1);val count=IntArray(1)
+        val attrs=intArrayOf(EGL_RENDERABLE_TYPE,0x40,EGL_SURFACE_TYPE,EGL_PBUFFER_BIT,EGL_RED_SIZE,8,EGL_GREEN_SIZE,8,EGL_BLUE_SIZE,8,EGL_ALPHA_SIZE,8,EGL_NONE)
+        assertTrue(eglChooseConfig(display,attrs,0,configs,0,1,count,0));assertTrue(count[0]>0)
+        val context=eglCreateContext(display,configs[0],EGL_NO_CONTEXT,intArrayOf(EGL_CONTEXT_CLIENT_VERSION,3,EGL_NONE),0)
+        val surface=eglCreatePbufferSurface(display,configs[0],intArrayOf(EGL_WIDTH,64,EGL_HEIGHT,64,EGL_NONE),0)
+        try {
+            assertTrue(eglMakeCurrent(display,surface,surface,context))
+            val renderer=SceneRenderer { fail(it) };renderer.onSurfaceCreated(null,null);renderer.onSurfaceChanged(null,64,64)
+            block(renderer);assertEquals(GL_NO_ERROR,glGetError())
+        } finally {
+            eglMakeCurrent(display,EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT)
+            eglDestroySurface(display,surface);eglDestroyContext(display,context);eglTerminate(display)
+        }
+    }
+    private fun pixel(x: Int,y: Int): List<Int> {
+        val bytes=ByteBuffer.allocateDirect(4);glReadPixels(x,y,1,1,GL_RGBA,GL_UNSIGNED_BYTE,bytes)
+        return (0..3).map { bytes.get(it).toInt() and 255 }
+    }
+    @Test fun solidSpriteRendersAndContextCanBeRecreated() {
+        repeat(2) { withGl { renderer ->
+            renderer.frame=RenderFrame(scene=Scene(nodes=listOf(Node(components=listOf(TransformComponent(),SpriteComponent(Vec2(32f,32f),Color(1f,0f,0f)))))))
+            renderer.onDrawFrame(null);val p=pixel(32,32);assertTrue(p[0]>240);assertTrue(p[1]<10)
+        } }
+    }
+    @Test fun rotatedSplitViewsKeepTheirOwnScissoredPixels() = withGl { renderer ->
+        val red=Node(components=listOf(TransformComponent(Transform(Vec2(-60f,0f))),SpriteComponent(Vec2(16f,32f),Color(1f,0f,0f))))
+        val blue=Node(components=listOf(TransformComponent(Transform(Vec2(60f,0f))),SpriteComponent(Vec2(16f,32f),Color(0f,0f,1f))))
+        val views=listOf(CameraView("left",Camera2D(Vec2(-60f,0f),rotation=90f),CameraViewport(width=.5f)),CameraView("right",Camera2D(Vec2(60f,0f)),CameraViewport(x=.5f,width=.5f)))
+        renderer.frame=RenderFrame(scene=Scene(nodes=listOf(red,blue)),views=views,grid=false);renderer.onDrawFrame(null)
+        assertTrue(pixel(16,32)[0]>240);assertTrue("Rotated rectangle should span the left viewport horizontally",pixel(28,32)[0]>240)
+        assertTrue(pixel(48,32)[2]>240);assertTrue(pixel(60,32)[2]<80)
+    }
+    @Test fun parallaxAndActualGlLinesRenderIntoFramebuffer() = withGl { renderer ->
+        val node=Node(components=listOf(TransformComponent(),SpriteComponent(Vec2(16f,16f),Color(1f,0f,1f)),ParallaxComponent(Vec2())))
+        renderer.frame=RenderFrame(scene=Scene(nodes=listOf(node)),camera=Camera2D(Vec2(100f,0f)),debugLines=listOf(DebugLine(Vec2(76f,-12f),Vec2(124f,-12f),Color(0f,1f,0f))),grid=false)
+        renderer.onDrawFrame(null);assertTrue(pixel(32,32)[0]>240);assertTrue(pixel(32,32)[2]>240)
+        assertTrue("Expected real green GL line pixels",(19..21).any { y -> (30..33).any { x -> val p=pixel(x,y);p[1]>240 && p[0]<10 && p[2]<10 } })
+        renderer.frame=renderer.frame.copy(camera=Camera2D(Vec2(200f,0f)),debugLines=emptyList());renderer.onDrawFrame(null)
+        assertTrue("Zero-factor parallax must remain screen-fixed",pixel(32,32)[0]>240)
+    }
+}
+````
+
 ## app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt
 
 ````kotlin
 package world.engine.app
 
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import org.junit.Rule
 import org.junit.Test
@@ -281,7 +343,7 @@ class PlayModeTest {
         compose.waitUntil(15000){compose.onAllNodesWithText("MyGame • saved").fetchSemanticsNodes().isNotEmpty()}
         assertArrayEquals(saved,scene.readBytes())
         compose.onNodeWithText("Save",substring=false).performScrollTo().performClick()
-        compose.waitUntil(15000){compose.onAllNodesWithText("Scene saved",substring=false).fetchSemanticsNodes().isNotEmpty()}
+        compose.waitUntil(15000){compose.onAllNodesWithText("Save",substring=false).fetchSemanticsNodes().any { !it.config.contains(SemanticsProperties.Disabled) }}
         assertArrayEquals(saved,scene.readBytes())
     }
 }
@@ -541,14 +603,14 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 
 | Path | SHA-256 |
 |---|---|
-| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `df183cba1e727fa5d155d1119376eb2da460e2649979abe3a0145400f3bc7bf6` |
+| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `6846da7e1fa1106002314a8f577b14123d6392737c4b7d32c1c8c90726596b93` |
 | `app/src/main/assets/licenses/JBOX2D.txt` | `2895b20e161e2fcf8ae9cdda59f86cc4e4db9136d5fc453b809ce843bd1d0cd9` |
 | `docs/PHASE2_README.md` | `3708ece381fcec2e27c7ce78cc0e96fb1903187dd977f3f2b02cec1bcd834cf3` |
 | `docs/PHASE3.md` | `861015849dba8afc1a947be82fb8536a3f6c0a86c926cf8f7245004d3c664927` |
 | `docs/PHASE3_BASELINE.json` | `d19f72593a83976aa20dee09180932f51a16ac38c119ef699f9dd3df1f49d7c8` |
 | `docs/PHASE3_FILES.md` | `generated; not self-hashed` |
 | `docs/PHASE3_SOURCE.md` | `generated; not self-hashed` |
-| `docs/PHASE3_VERIFICATION.md` | `acee01002d60d1fbc32aaf9779aa271fd9e59b1750a82b8451ab9df1c28b820c` |
+| `docs/PHASE3_VERIFICATION.md` | `3d1b04d1699ad34621aaa880acb24ff669b6664d587f461c315024f512f20d32` |
 | `editor-animation/src/main/kotlin/world/engine/animationeditor/TimelineEditor.kt` | `9f37aa4d209b30d1a7a950bd3f9b2fb8130d68b83d5a2712745bf80e6c34ae5f` |
 | `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `48100da79f91e10bdc1e73c2614f505d3e1f8f532eea16c3f260f89b7c571838` |
 | `editor-ui/src/main/kotlin/world/engine/editor/RuntimePanels.kt` | `6ecc7fd603996c83994ec3043e70a454fe08e15e05e22aebeebd61cd14ef5aa3` |
@@ -563,21 +625,22 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 | `engine-physics/src/main/kotlin/world/engine/physics/ColliderGeometry.kt` | `c33b1557e2337b1035412449ff63bf8a96ff6525d95f020b586b044d58b3072d` |
 | `engine-physics/src/main/kotlin/world/engine/physics/PhysicsWorld.kt` | `7484b6e64a71f0d1de62fe4f8a003361d2c8964139c312217aa9191ec9d65264` |
 | `engine-physics/src/test/kotlin/world/engine/physics/PhysicsWorldTest.kt` | `c5b6ec7db3b65ffb11400de34df8436a6ed79d4ae083100d6565c6e4570bf148` |
-| `engine-render/src/main/kotlin/world/engine/render/CameraRig.kt` | `1ec04ebf57f98ea7135c1b5d4210110608f9b4f5e8b251da1aeccb0f268bc7e4` |
-| `engine-render/src/test/kotlin/world/engine/render/CameraRigTest.kt` | `c67cbbd0eff9bb64d3b10a46799c012321fc721e279255816bdab62a3d5a06f0` |
+| `engine-render/src/main/kotlin/world/engine/render/CameraRig.kt` | `f58a3549a6058b4ef48d8f8ab868c3374588ca7401a3d852237b6ef3a4e59b73` |
+| `engine-render/src/test/kotlin/world/engine/render/CameraRigTest.kt` | `875b659a14262891c777ceabed3e72320671527453883ac5f083637deff52274` |
 | `tools/RuntimeSmoke.kt` | `295b53a980fd580ab8f836d19cf20fd6c3f23618abb9bc3ea4f4077546902652` |
 | `tools/annotate_ci_failure.py` | `4c1cfaeb9d46a1adc082b3f411ffa7a12c190c5485c6fe03b9f5e0823e1551e0` |
 | `tools/report_ci_results.py` | `c6f19722e022fa015736ef72e1b89153b793f9399f92ab32ce346ee695ca74f9` |
 | `tools/write_phase3_delivery.py` | `da9857724f5677de99644db3cd672b100dc9cf6bc59920b9bdd4dfd73d1257b2` |
 
-## CHANGED — 23 files
+## CHANGED — 24 files
 
 | Path | SHA-256 |
 |---|---|
 | `.github/workflows/android.yml` | `e75928b38b51a351d115fc868f57430e85bb5c47c5b3ea238d20f21e6eb5021b` |
 | `.gitignore` | `8dc14c72d0dda33f5b0b71b55bbfd8ebb5d62ac868713d3b0bc1c048c676931b` |
-| `README.md` | `562ff9b511f98a88c1db8d727a9cf01bfcb69659e69dd3842a29a1a4bbb9aec9` |
+| `README.md` | `cd0ea11c1162dcac0d2ea1a0a81bb8f710c42774461ffe21130a3f43b4c39e4a` |
 | `app/build.gradle.kts` | `1f61fb5f336d157f8b89945f6509c0101584771bee513ad4c3126e2e52527a04` |
+| `app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt` | `def61e6bcf6dd93a949cdaa5908f580a4aae90b449d0e9612ee1b1f0270c0159` |
 | `editor-animation/README.md` | `75e26f1bb73acb29809ab472624578f4ed5525a4e509eb7b8edda5f0889c3853` |
 | `editor-animation/build.gradle.kts` | `6b729348d583a0b0a1534b42b4aeed5604370ed00693b26eb4355b6e50c8d5dd` |
 | `editor-ui/build.gradle.kts` | `3d0e1b82f39a5edbefb303c3e5afcf8984967cee6d1c88e6a7a63f6913676151` |
@@ -598,12 +661,11 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 | `tools/check_engine_standalone.py` | `b29def0b98ae5f366b43b5796899f1675c6d47beb3e46e3c152278fe79207b25` |
 | `tools/validate_structure.py` | `a8369eedb0732fb76ffe6c6790e463a4c5c7386626e116b9f9e1da1957a23cfd` |
 
-## UNCHANGED — 82 files
+## UNCHANGED — 81 files
 
 | Path | SHA-256 |
 |---|---|
 | `app/src/androidTest/kotlin/world/engine/app/EditorSmokeTest.kt` | `13d7226c36de268fa9faaf91b0da01b6879579fc6d5aa8bf018cb4dac6286660` |
-| `app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt` | `61d4760e68f1cc24d5d11bd2cde0ba839bc966daee8db906a4a937a9ba25830b` |
 | `app/src/main/AndroidManifest.xml` | `bc257b5b75ce0167c9550e824a96b3235b0ca6ee311522bc6546f0eda7536b2a` |
 | `app/src/main/kotlin/world/engine/app/MainActivity.kt` | `389e5d7bcbcdaa28d5328a44336ef53b0e8780d471ae3f0eee9aad53520ea3e2` |
 | `app/src/main/res/values/styles.xml` | `04eb151f059d6054eaa700f0783ef7a78cc1f3211819a3f3a0da64f0c3dd713b` |
@@ -732,7 +794,7 @@ Successful CI builds upload `android-build-and-unit-results` with the genuine de
 
 ## Conventional test inventory
 
-There are **30 authored JUnit Jupiter cases** in seven files and **13 authored Android cases** in six files. Execution counts must come from CI XML summaries, not from this inventory.
+There are **31 authored JUnit Jupiter cases** in seven files and **15 authored Android cases** in six files. Execution counts must come from CI XML summaries, not from this inventory.
 
 - Math: affine transforms and camera-independent coordinate math.
 - Core: scenes/history/hierarchy, prefab safety, runtime serialization, input edges/disconnection, invalid controllers/animation/geometry checks.
@@ -742,7 +804,7 @@ There are **30 authored JUnit Jupiter cases** in seven files and **13 authored A
 - Android assets: five real Bitmap/SQLite/import/split/reference cases.
 - Android IO: three real persistence/recovery cases.
 - Android physics: fitted alpha hull from a real transparent Bitmap.
-- App: create/add/save flow, generated/split prefab asset flow, real EGL/GLES pixel readback, and Play/Pause/Step/Stop without changing the saved scene bytes.
+- App: create/add/save flow, generated/split prefab asset flow, real EGL/GLES context recreation, rotated split-camera scissor/readback, parallax and GL line readback, and Play/Pause/Step/Stop without changing the saved scene bytes.
 
 ## Manual device acceptance still required
 
@@ -3169,7 +3231,7 @@ class CameraRig(initialActive: String?=null) {
                 desired+=Vec2((cos(-r)*correction.x-sin(-r)*correction.y).toFloat(),(sin(-r)*correction.x+cos(-r)*correction.y).toFloat())
             } else desired=authored.center
             val alpha=if(config.smoothing==0f || n.id !in states)1f else 1f-exp(-dt/config.smoothing)
-            var camera=authored.copy(center=old.center+(desired-old.center)*alpha)
+            var camera=constrain(authored.copy(center=old.center+(desired-old.center)*alpha),config,width,height)
             states[n.id]=camera
             previous?.let { from ->
                 val t=if(transitionDuration==0f)1f else (transition/transitionDuration).coerceIn(0f,1f);val eased=t*t*(3-2*t)
@@ -3180,19 +3242,20 @@ class CameraRig(initialActive: String?=null) {
                 val amplitude=s.amplitude*(1f-shakeTime/s.seconds);val seed=(n.id.hashCode() and 255)*.1f
                 camera=camera.copy(center=camera.center+Vec2(sin(shakeTime*137f+seed)*amplitude,cos(shakeTime*173f+seed)*amplitude))
             } }
-            val low=config.limitMin;val high=config.limitMax
-            if(low!=null && high!=null) {
-                val r=camera.rotation*PI/180;val halfX=width*config.viewport.width/(2*camera.zoom);val halfY=height*config.viewport.height/(2*camera.zoom)
-                val extentX=(abs(cos(r))*halfX+abs(sin(r))*halfY).toFloat();val extentY=(abs(sin(r))*halfX+abs(cos(r))*halfY).toFloat()
-                fun clamp(value: Float,min: Float,max: Float,extent: Float)=if(max-min<2*extent)(min+max)/2 else value.coerceIn(min+extent,max-extent)
-                camera=camera.copy(center=Vec2(clamp(camera.center.x,low.x,high.x,extentX),clamp(camera.center.y,low.y,high.y,extentY)))
-            }
+            camera=constrain(camera,config,width,height)
             CameraView(n.id,camera,config.viewport)
         }
         if(transition>=transitionDuration)previous=null
         if(shakeTime>=(shake?.seconds ?: 0f))shake=null
         last=if(result.isEmpty())listOf(CameraView("editor-default",Camera2D())) else result
         return last
+    }
+    private fun constrain(camera: Camera2D,config: CameraComponent,width: Int,height: Int): Camera2D {
+        val low=config.limitMin ?: return camera;val high=config.limitMax ?: return camera
+        val r=camera.rotation*PI/180;val halfX=width*config.viewport.width/(2*camera.zoom);val halfY=height*config.viewport.height/(2*camera.zoom)
+        val extentX=(abs(cos(r))*halfX+abs(sin(r))*halfY).toFloat();val extentY=(abs(sin(r))*halfX+abs(cos(r))*halfY).toFloat()
+        fun clamp(value: Float,min: Float,max: Float,extent: Float)=if(max-min<2*extent)(min+max)/2 else value.coerceIn(min+extent,max-extent)
+        return camera.copy(center=Vec2(clamp(camera.center.x,low.x,high.x,extentX),clamp(camera.center.y,low.y,high.y,extentY)))
     }
 }
 ````
@@ -3377,6 +3440,12 @@ class CameraRigTest {
         val c=Camera2D(Vec2(80f,40f),2f,37f);val p=Vec2(120f,70f);val clip=c.worldToClip(p,640,480)
         val restored=c.screenToWorld((clip.x+1)*320,(1-clip.y)*240,640,480)
         assertEquals(p.x,restored.x,.001f);assertEquals(p.y,restored.y,.001f)
+    }
+    @Test fun followDoesNotAccumulateHiddenOvershootBeyondLimits() {
+        val target=Node().moved(Vec2(300f,0f));val camera=Node(components=listOf(TransformComponent(),CameraComponent(follow=target.id,smoothing=.1f,deadZone=Vec2(),limitMin=Vec2(-100f,-100f),limitMax=Vec2(100f,100f))))
+        val rig=CameraRig();val scene=Scene(nodes=listOf(target,camera));assertEquals(50f,rig.update(scene,.1f,100,100).single().camera.center.x,.001f)
+        val returned=rig.update(scene.replace(target.moved(Vec2())),.1f,100,100).single().camera.center.x
+        assertTrue(returned in 0f..49f,"Camera must immediately follow a target returning inside its limits")
     }
     @Test fun limitsIncludeVisibleViewportAndMultipleViewsTransition() {
         val target=Node().moved(Vec2(300f,0f))

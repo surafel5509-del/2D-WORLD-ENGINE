@@ -28,23 +28,21 @@ The code files in their modules are authoritative; source appendices are histori
 Install **JDK 17**, Android SDK **34**, and Build Tools **34.0.0**. Open the repository in Android Studio (Koala or newer), select Gradle JDK 17, configure the Android SDK location, sync and run `app` on an Android 7+ device with GLES 3 support.
 
 ```sh
-./gradlew :engine-math:test :engine-core:test :app:assembleDebug
+./gradlew :engine-math:test :engine-core:test :engine-animation:testDebugUnitTest :engine-physics:testDebugUnitTest :engine-render:testDebugUnitTest :app:assembleDebug
 ./gradlew :app:installDebug
-./gradlew :engine-assets:connectedDebugAndroidTest :engine-io:connectedDebugAndroidTest :app:connectedDebugAndroidTest
+./gradlew :engine-physics:connectedDebugAndroidTest :engine-assets:connectedDebugAndroidTest :engine-io:connectedDebugAndroidTest :app:connectedDebugAndroidTest
 ```
 
 Gradle 8.7, AGP 8.5.2, Kotlin 1.9.24; minimum SDK 24, target/compile SDK 34. Initial development-tool/dependency downloads need connectivity; editor operation is offline. On Windows use `gradlew.bat`.
 
-Successful Gradle packaging produces `app/build/outputs/apk/debug/app-debug.apk`. **No APK was produced in this session.** The Android CI workflow is supplied but has not been run here.
+Successful Gradle packaging produces `app/build/outputs/apk/debug/app-debug.apk`. **The full Gradle/Compose build has passed in GitHub Actions and produced a real debug APK artifact.** See the [verification ledger](docs/PHASE3_VERIFICATION.md) for exact revisions, test results and artifact links; no signed standalone-game export is claimed.
 
 ## Validation actually performed
 
-- Standalone Kotlin **1.9.23** compilation of math, core, assets, IO, renderer and viewport against Android API 34, with serialization generation: **passed**. This diagnostic compiler is not the pinned Gradle/Kotlin 1.9.24 app toolchain.
-- Six executable core smoke checks, including nested overrides and JSON serialization: **passed**.
-- Host SQLite checks executing the production DDL: **passed**.
-- Repository/module/XML/wrapper/source-presence checks: **passed**.
-- Full Gradle build: **blocked by Gradle distribution TLS/download failure**, after obtaining a temporary Java 17 runtime. Android SDK installation and Compose/AndroidX build dependencies are unavailable in this sandbox.
-- JUnit, Android bitmap/SQLite tests, Compose tests, physical touch/drop tests and GL device tests: **not run**.
+- Eight separately compiled engine/runtime modules and **16 executable core/runtime smoke groups**: passed, using actual JBox2D and Android 34 APIs.
+- Full pinned-toolchain Gradle/Compose build, debug APK/test APK assembly, and JVM unit tasks: passed in CI; exact revisions/results are recorded in the verification ledger.
+- Host SQLite and repository/module/XML/wrapper checks: passed.
+- Emulator acceptance is recorded separately in the ledger. Physical phone/tablet/gamepad and sustained-performance checks remain unverified.
 
 ## Data safety
 

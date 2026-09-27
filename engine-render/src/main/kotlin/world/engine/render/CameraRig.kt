@@ -37,7 +37,7 @@ class CameraRig(initialActive: String?=null) {
                 desired+=Vec2((cos(-r)*correction.x-sin(-r)*correction.y).toFloat(),(sin(-r)*correction.x+cos(-r)*correction.y).toFloat())
             } else desired=authored.center
             val alpha=if(config.smoothing==0f || n.id !in states)1f else 1f-exp(-dt/config.smoothing)
-            var camera=authored.copy(center=old.center+(desired-old.center)*alpha)
+            var camera=constrain(authored.copy(center=old.center+(desired-old.center)*alpha),config,width,height)
             states[n.id]=camera
             previous?.let { from ->
                 val t=if(transitionDuration==0f)1f else (transition/transitionDuration).coerceIn(0f,1f);val eased=t*t*(3-2*t)
@@ -48,18 +48,19 @@ class CameraRig(initialActive: String?=null) {
                 val amplitude=s.amplitude*(1f-shakeTime/s.seconds);val seed=(n.id.hashCode() and 255)*.1f
                 camera=camera.copy(center=camera.center+Vec2(sin(shakeTime*137f+seed)*amplitude,cos(shakeTime*173f+seed)*amplitude))
             } }
-            val low=config.limitMin;val high=config.limitMax
-            if(low!=null && high!=null) {
-                val r=camera.rotation*PI/180;val halfX=width*config.viewport.width/(2*camera.zoom);val halfY=height*config.viewport.height/(2*camera.zoom)
-                val extentX=(abs(cos(r))*halfX+abs(sin(r))*halfY).toFloat();val extentY=(abs(sin(r))*halfX+abs(cos(r))*halfY).toFloat()
-                fun clamp(value: Float,min: Float,max: Float,extent: Float)=if(max-min<2*extent)(min+max)/2 else value.coerceIn(min+extent,max-extent)
-                camera=camera.copy(center=Vec2(clamp(camera.center.x,low.x,high.x,extentX),clamp(camera.center.y,low.y,high.y,extentY)))
-            }
+            camera=constrain(camera,config,width,height)
             CameraView(n.id,camera,config.viewport)
         }
         if(transition>=transitionDuration)previous=null
         if(shakeTime>=(shake?.seconds ?: 0f))shake=null
         last=if(result.isEmpty())listOf(CameraView("editor-default",Camera2D())) else result
         return last
+    }
+    private fun constrain(camera: Camera2D,config: CameraComponent,width: Int,height: Int): Camera2D {
+        val low=config.limitMin ?: return camera;val high=config.limitMax ?: return camera
+        val r=camera.rotation*PI/180;val halfX=width*config.viewport.width/(2*camera.zoom);val halfY=height*config.viewport.height/(2*camera.zoom)
+        val extentX=(abs(cos(r))*halfX+abs(sin(r))*halfY).toFloat();val extentY=(abs(sin(r))*halfX+abs(cos(r))*halfY).toFloat()
+        fun clamp(value: Float,min: Float,max: Float,extent: Float)=if(max-min<2*extent)(min+max)/2 else value.coerceIn(min+extent,max-extent)
+        return camera.copy(center=Vec2(clamp(camera.center.x,low.x,high.x,extentX),clamp(camera.center.y,low.y,high.y,extentY)))
     }
 }

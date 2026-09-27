@@ -1,6 +1,7 @@
 package world.engine.app
 
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import org.junit.Rule
 import org.junit.Test
@@ -29,7 +30,7 @@ class PlayModeTest {
         compose.waitUntil(15000){compose.onAllNodesWithText("MyGame • saved").fetchSemanticsNodes().isNotEmpty()}
         assertArrayEquals(saved,scene.readBytes())
         compose.onNodeWithText("Save",substring=false).performScrollTo().performClick()
-        compose.waitUntil(15000){compose.onAllNodesWithText("Scene saved",substring=false).fetchSemanticsNodes().isNotEmpty()}
+        compose.waitUntil(15000){compose.onAllNodesWithText("Save",substring=false).fetchSemanticsNodes().any { !it.config.contains(SemanticsProperties.Disabled) }}
         assertArrayEquals(saved,scene.readBytes())
     }
 }

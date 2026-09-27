@@ -41,7 +41,7 @@ Successful CI builds upload `android-build-and-unit-results` with the genuine de
 
 ## Conventional test inventory
 
-There are **30 authored JUnit Jupiter cases** in seven files and **13 authored Android cases** in six files. Execution counts must come from CI XML summaries, not from this inventory.
+There are **31 authored JUnit Jupiter cases** in seven files and **15 authored Android cases** in six files. Execution counts must come from CI XML summaries, not from this inventory.
 
 - Math: affine transforms and camera-independent coordinate math.
 - Core: scenes/history/hierarchy, prefab safety, runtime serialization, input edges/disconnection, invalid controllers/animation/geometry checks.
@@ -51,7 +51,7 @@ There are **30 authored JUnit Jupiter cases** in seven files and **13 authored A
 - Android assets: five real Bitmap/SQLite/import/split/reference cases.
 - Android IO: three real persistence/recovery cases.
 - Android physics: fitted alpha hull from a real transparent Bitmap.
-- App: create/add/save flow, generated/split prefab asset flow, real EGL/GLES pixel readback, and Play/Pause/Step/Stop without changing the saved scene bytes.
+- App: create/add/save flow, generated/split prefab asset flow, real EGL/GLES context recreation, rotated split-camera scissor/readback, parallax and GL line readback, and Play/Pause/Step/Stop without changing the saved scene bytes.
 
 ## Manual device acceptance still required
 
