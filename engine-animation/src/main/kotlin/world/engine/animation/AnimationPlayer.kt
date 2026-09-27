@@ -8,10 +8,15 @@ import kotlin.math.floor
 class AnimationPlayer(val clip: AnimationClip, private val speed: Float=1f) {
     private var ticks=0.0
     private var started=false
+    /** Last dispatched sprite event. It changes only at real event boundaries, including reverse playback. */
+    var eventSprite: String?=null
+        private set
     init { clip.validated(); require(speed in .01f..10f) }
     val finished get() = clip.loop==LoopMode.ONCE && ticks>=clip.frames
     val frame: Float get() = frameAt(ticks).toFloat()
-    fun seek(frame: Float) { require(frame.isFinite()); ticks=frame.coerceIn(0f,(clip.frames-1).toFloat()).toDouble(); started=true }
+    /** Seeks in forward frame space without emitting events. */
+    fun seek(frame: Float) { require(frame.isFinite()); ticks=frame.coerceIn(0f,(clip.frames-1).toFloat()).toDouble();eventSprite=latestSpriteAt(clip,ticks.toFloat());started=true }
+    /** Advances bounded elapsed time, delivering frame-zero and every crossed frame in order. */
     fun advance(seconds: Float, emit: (AnimationEvent)->Unit = {}) {
         require(seconds.isFinite() && seconds in 0f..10f)
         if(!started) { emitAt(0,emit); started=true }
@@ -27,7 +32,7 @@ class AnimationPlayer(val clip: AnimationClip, private val speed: Float=1f) {
         // Keep long-running loops numerically stable without losing a boundary.
         if(ticks>1_000_000 && clip.loop!=LoopMode.ONCE)ticks%=period()
     }
-    private fun emitAt(frame: Int,emit: (AnimationEvent)->Unit) { clip.events.filter { it.frame==frame }.forEach(emit) }
+    private fun emitAt(frame: Int,emit: (AnimationEvent)->Unit) { clip.events.filter { it.frame==frame }.forEach { if(it.kind==AnimationEventKind.SET_SPRITE)eventSprite=it.assetId;emit(it) } }
     private fun period() = if(clip.loop==LoopMode.PING_PONG) maxOf(1,2*(clip.frames-1)).toDouble() else clip.frames.toDouble()
     private fun frameAt(t: Double): Double = when(clip.loop) {
         LoopMode.ONCE -> t.coerceIn(0.0,(clip.frames-1).toDouble())
@@ -38,7 +43,8 @@ class AnimationPlayer(val clip: AnimationClip, private val speed: Float=1f) {
 
 object AnimationSampler {
     /** A pure sampler used both by timeline scrubbing and the runtime player. */
-    fun sample(base: Node,clip: AnimationClip,frame: Float,current: Node=base): Node {
+    fun sample(base: Node,clip: AnimationClip,frame: Float,current: Node=base,eventSprite: String?=latestSpriteAt(clip,frame)): Node {
+        require(frame.isFinite())
         var transform=current.transform; var sprite=current.sprite
         val f=frame.coerceIn(0f,(clip.frames-1).toFloat())
         clip.tracks.forEach { track ->
@@ -55,7 +61,9 @@ object AnimationSampler {
                 TrackProperty.SPRITE -> sprite=sprite?.copy(asset=null,assetId=a.assetId)
             }
         }
-        clip.events.withIndex().filter { it.value.kind==AnimationEventKind.SET_SPRITE && it.value.frame<=f }.maxWithOrNull(compareBy<IndexedValue<AnimationEvent>> { it.value.frame }.thenBy { it.index })?.value?.let { sprite=sprite?.copy(asset=null,assetId=it.assetId) }
+        eventSprite?.let { sprite=sprite?.copy(asset=null,assetId=it) }
         return current.copy(components=current.components.map { when(it) { is TransformComponent -> TransformComponent(transform); is SpriteComponent -> sprite ?: it; else -> it } })
     }
 }
+
+private fun latestSpriteAt(clip: AnimationClip,frame: Float): String? = clip.events.withIndex().filter { it.value.kind==AnimationEventKind.SET_SPRITE && it.value.frame<=frame }.maxWithOrNull(compareBy<IndexedValue<AnimationEvent>> { it.value.frame }.thenBy { it.index })?.value?.assetId

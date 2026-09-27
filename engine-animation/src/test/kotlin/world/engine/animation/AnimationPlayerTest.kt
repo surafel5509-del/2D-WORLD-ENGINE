@@ -16,6 +16,14 @@ class AnimationPlayerTest {
         val clip=AnimationClip(frames=3,fps=10,events=(0..2).map { AnimationEvent(it,"f$it") });val player=AnimationPlayer(clip);val events=mutableListOf<Int>()
         player.advance(.65f){events.add(it.frame)};assertEquals(listOf(0,1,2,0,1,2,0),events)
     }
+    @Test fun reversePlaybackChangesSpriteOnlyWhenItsEventIsCrossed() {
+        val a=java.util.UUID.randomUUID().toString();val b=java.util.UUID.randomUUID().toString()
+        val clip=AnimationClip(frames=3,fps=1,loop=LoopMode.PING_PONG,events=listOf(AnimationEvent(1,"a",AnimationEventKind.SET_SPRITE,a),AnimationEvent(2,"b",AnimationEventKind.SET_SPRITE,b)))
+        val player=AnimationPlayer(clip);player.advance(2f);assertEquals(b,player.eventSprite)
+        player.advance(.5f);assertEquals(1.5f,player.frame);assertEquals(b,player.eventSprite)
+        player.advance(.5f);assertEquals(a,player.eventSprite)
+        player.seek(0f);assertNull(player.eventSprite)
+    }
     @Test fun relativePositionAndStepInterpolation() {
         val node=Node().moved(Vec2(100f,50f))
         val track=AnimationTrack(TrackProperty.POSITION,listOf(AnimationKey(0,listOf(0f,0f)),AnimationKey(10,listOf(20f,40f))))

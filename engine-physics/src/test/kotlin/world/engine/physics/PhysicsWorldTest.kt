@@ -27,6 +27,10 @@ class PhysicsWorldTest {
         val node=Node(components=listOf(TransformComponent(),RigidBodyComponent(colliders=colliders)))
         val scene=Scene(nodes=listOf(node));val world=PhysicsWorld(scene);assertEquals(1,world.bodyCount);assertTrue(world.debugLines().size>20);world.step(scene)
     }
+    @Test fun tinyFixturesAreRejectedInsteadOfSilentlyReplacedByBox2D() {
+        val node=Node(components=listOf(TransformComponent(),RigidBodyComponent(colliders=listOf(Collider(size=Vec2(.1f,.1f))))))
+        assertThrows(IllegalArgumentException::class.java){PhysicsWorld(Scene(nodes=listOf(node)))}
+    }
     @Test fun unsafeBodyHierarchyIsRejectedAndConvexHullIsBounded() {
         val parent=Node(components=listOf(TransformComponent(Transform(scale=Vec2(2f,1f)))))
         val child=body(Vec2()).copy(parent=parent.id)

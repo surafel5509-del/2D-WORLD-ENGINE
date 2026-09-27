@@ -37,7 +37,7 @@ class PreviewSession(private val authored: Scene,private val event: (String)->Un
             current=current.copy(nodes=current.nodes.map { n ->
                 animators[n.id]?.let { player ->
                     player.advance(PhysicsWorld.STEP) { e -> event("Animation ${e.name} (${e.kind}) on ${n.name}, frame ${e.frame}") }
-                    AnimationSampler.sample(bases.getValue(n.id),player.clip,player.frame,n)
+                    AnimationSampler.sample(bases.getValue(n.id),player.clip,player.frame,n,player.eventSprite)
                 } ?: n
             })
             current=current.copy(nodes=current.nodes.map { n ->

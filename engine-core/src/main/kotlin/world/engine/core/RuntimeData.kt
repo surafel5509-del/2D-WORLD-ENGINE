@@ -46,8 +46,8 @@ import kotlin.math.abs
         require(density in .001f..1000f && friction in 0f..10f && restitution in 0f..1f)
         if(shape==ShapeKind.CAPSULE)require(size.y>=size.x) { "Capsules are vertical; rotate the entity for horizontal capsules" }
         if(shape==ShapeKind.POLYGON) {
-            require(vertices.size in 3..8 && vertices.all { it.x.isFinite() && it.y.isFinite() }) { "Use a convex polygon with 3–8 vertices" }
-            val turns=vertices.indices.map { i -> val a=vertices[i]; val b=vertices[(i+1)%vertices.size]; val c=vertices[(i+2)%vertices.size]; (b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x) }
+            require(vertices.size in 3..8 && vertices.all { it.x in -1000000f..1000000f && it.y in -1000000f..1000000f }) { "Use a convex polygon with 3–8 vertices" }
+            val turns=vertices.indices.flatMap { i -> val a=vertices[i];val next=(i+1)%vertices.size;val b=vertices[next];vertices.indices.filter { it!=i && it!=next }.map { k -> val c=vertices[k];(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x) } }
             require(turns.all { it>0.001f } || turns.all { it<-.001f }) { "Polygon must be strictly convex, ordered, and nondegenerate" }
         }
         return this
@@ -89,7 +89,7 @@ fun Scene.validateRuntimeData() {
     require(clips.size<=512 && clips.map { it.id }.distinct().size==clips.size)
     clips.forEach { it.validated() }; val byClip=clips.associateBy { it.id }; val byNode=nodes.associateBy { it.id }
     require(gravity.x.isFinite() && gravity.y.isFinite() && abs(gravity.x)<=100000 && abs(gravity.y)<=100000)
-    require(inputMap.bindings.size<=256 && inputMap.bindings.distinct().size==inputMap.bindings.size) { "Duplicate input binding" }
+    require(inputMap.bindings.size<=256 && inputMap.bindings.distinct().size==inputMap.bindings.size) { "Use at most 256 distinct input bindings" }
     inputMap.bindings.forEach { require(it.action.isNotBlank() && it.action.length<=64 && it.scale.isFinite() && abs(it.scale)<=10 && it.deadZone in 0f..0.95f && it.code>=0) }
     nodes.forEach { node ->
         require(node.components.map { it::class }.distinct().size==node.components.size) { "Duplicate component on ${node.name}" }
@@ -105,6 +105,7 @@ fun Scene.validateRuntimeData() {
         node.component<RigidBodyComponent>()?.let { body ->
             require(body.colliders.size in 1..32); body.colliders.forEach { it.validated() }
             require(listOf(body.gravityScale,body.linearDamping,body.velocity.x,body.velocity.y,body.angularVelocity).all { it.isFinite() })
+            require(abs(body.velocity.x)<=100000f && abs(body.velocity.y)<=100000f && abs(body.angularVelocity)<=36000f) { "Reduce initial body velocity" }
             require(body.gravityScale in -10f..10f && body.linearDamping in 0f..100f)
             require(node.component<ParallaxComponent>()==null) { "Physics bodies cannot use visual parallax" }
         }
@@ -128,6 +129,6 @@ fun Scene.validateRuntimeData() {
     joints.forEach { j ->
         require(j.bodyA!=j.bodyB && byNode[j.bodyA]?.component<RigidBodyComponent>()!=null && byNode[j.bodyB]?.component<RigidBodyComponent>()!=null) { "Joint endpoints must be distinct rigid bodies" }
         require(listOf(j.anchorA.x,j.anchorA.y,j.anchorB.x,j.anchorB.y,j.axis.x,j.axis.y,j.length,j.frequency,j.damping,j.motorSpeed,j.maxMotorForce,j.lower,j.upper).all { it.isFinite() })
-        require(j.length in .1f..100000f && j.frequency in 0f..100f && j.damping in 0f..1f && j.axis.length()>.001f && j.maxMotorForce>=0 && j.lower<=j.upper)
+        require(j.length in .1f..100000f && j.frequency in 0f..100f && j.damping in 0f..1f && j.axis.length()>.001f && j.maxMotorForce in 0f..1000000000f && abs(j.motorSpeed)<=100000f && abs(j.axis.x)<=1000000f && abs(j.axis.y)<=1000000f && j.lower<=j.upper)
     }
 }

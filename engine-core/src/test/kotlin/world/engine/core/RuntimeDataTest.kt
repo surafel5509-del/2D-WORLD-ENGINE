@@ -30,6 +30,10 @@ class RuntimeDataTest {
         val id=java.util.UUID.randomUUID().toString();val definition=Prefabs.capture(scene,root.id);val bundle=Prefabs.bundle(id,mapOf(id to definition))
         assertEquals(1,bundle.joints.size);assertNotEquals(scene.joints.single().bodyA,bundle.joints.single().bodyA);bundle.validated()
     }
+    @Test fun selfIntersectingStarIsNotAConvexPolygon() {
+        val points=(0..4).map { val a=it*4*Math.PI/5;Vec2((kotlin.math.cos(a)*50).toFloat(),(kotlin.math.sin(a)*50).toFloat()) }
+        assertThrows(IllegalArgumentException::class.java){Collider(shape=ShapeKind.POLYGON,vertices=points).validated()}
+    }
     @Test fun dynamicPoseAnimationAndBadCollidersAreRejected() {
         val clip=AnimationClip(tracks=listOf(AnimationTrack(TrackProperty.POSITION,listOf(AnimationKey(0,listOf(0f,0f))))))
         val n=Node(components=listOf(TransformComponent(),RigidBodyComponent(),AnimatorComponent(clip.id)))

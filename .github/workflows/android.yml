@@ -59,7 +59,7 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: set -o pipefail; ./gradlew :engine-physics:connectedDebugAndroidTest :engine-assets:connectedDebugAndroidTest :engine-io:connectedDebugAndroidTest :app:connectedDebugAndroidTest --console=plain --stacktrace 2>&1 | tee ci-device.log
+          script: bash -eo pipefail -c './gradlew :engine-physics:connectedDebugAndroidTest :engine-assets:connectedDebugAndroidTest :engine-io:connectedDebugAndroidTest :app:connectedDebugAndroidTest --console=plain --stacktrace 2>&1 | tee ci-device.log'
       - name: Annotate device failures
         if: failure()
         run: python3 tools/annotate_ci_failure.py ci-device.log

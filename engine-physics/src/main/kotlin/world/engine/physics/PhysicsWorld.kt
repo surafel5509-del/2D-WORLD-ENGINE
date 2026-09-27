@@ -44,14 +44,21 @@ class PhysicsWorld(initial: Scene,private val onContact: (CollisionEvent)->Unit 
                 position.set(box(matrix.map(Vec2())));this.angle=rotation;gravityScale=config.gravityScale;fixedRotation=config.fixedRotation;bullet=config.bullet;linearDamping=config.linearDamping
                 linearVelocity.set(box(config.velocity));angularVelocity=radians(config.angularVelocity)
             }
+            checkPose(definition.position,definition.angle)
             val body=world.createBody(definition);body.userData=n.id;bodies[n.id]=body
             config.colliders.forEachIndexed { index,c ->
-                fun point(p: Vec2): BoxVec = body.getLocalPoint(box(matrix.map(p)))
-                fun polygon(vertices: List<Vec2>) { val shape=PolygonShape();shape.set(vertices.map(::point).toTypedArray(),vertices.size);fixture(body,shape,c,index) }
+                fun point(p: Vec2): BoxVec = body.getLocalPoint(box(matrix.map(p))).also { require(it.x in -10000f..10000f && it.y in -10000f..10000f) { "Collider on ${n.name} is too large or offset too far" } }
+                fun polygon(vertices: List<Vec2>) {
+                    val points=vertices.map(::point)
+                    require(points.indices.all { a -> (a+1 until points.size).all { b -> points[a].sub(points[b]).lengthSquared()>=.000025f } }) { "Collider on ${n.name} has vertices less than 0.5 world pixels apart; increase its size" }
+                    val twiceArea=points.indices.sumOf { i -> val a=points[i];val b=points[(i+1)%points.size];(a.x*b.y-a.y*b.x).toDouble() }
+                    require(abs(twiceArea)>.000002) { "Collider on ${n.name} has negligible area; draw a larger convex polygon" }
+                    val shape=PolygonShape();shape.set(points.toTypedArray(),points.size);fixture(body,shape,c,index)
+                }
                 fun circle(center: Vec2,radius: Float) {
                     val values=matrix.values;val sx=hypot(values[0],values[3]);val sy=hypot(values[1],values[4])
                     if(abs(sx-sy)<.0001f*maxOf(1f,sx)) {
-                        val shape=CircleShape();shape.m_p.set(point(center));shape.m_radius=radius*sx/PIXELS_PER_METRE;fixture(body,shape,c,index)
+                        val shape=CircleShape();shape.m_p.set(point(center));shape.m_radius=radius*sx/PIXELS_PER_METRE;require(shape.m_radius in .005f..10000f) { "Circle radius must be 0.5–1000000 world pixels" };fixture(body,shape,c,index)
                     } else polygon(List(8) { i -> val a=i*2*PI/8; center+Vec2(cos(a).toFloat()*radius,sin(a).toFloat()*radius) })
                 }
                 when(c.shape) {
@@ -97,15 +104,21 @@ class PhysicsWorld(initial: Scene,private val onContact: (CollisionEvent)->Unit 
         }
         definition.collideConnected=j.collideConnected;world.createJoint(definition)
     }
+    /** Current world velocity in pixels per second; missing bodies return zero. */
     fun velocity(id: String): Vec2 = bodies[id]?.linearVelocity?.let(::pixels) ?: Vec2()
-    fun setVelocity(id: String,velocity: Vec2) { bodies[id]?.let { it.linearVelocity=box(velocity);it.isAwake=true } }
-    fun impulse(id: String,impulse: Vec2) { bodies[id]?.let { it.applyLinearImpulse(box(impulse),it.worldCenter) } }
+    /** Changes a body velocity in world pixels per second and wakes it. */
+    fun setVelocity(id: String,velocity: Vec2) { require(velocity.x.isFinite() && velocity.y.isFinite());bodies[id]?.let { it.linearVelocity=box(velocity);it.isAwake=true } }
+    /** Applies a world impulse in kilogram-pixels per second at the centre of mass. */
+    fun impulse(id: String,impulse: Vec2) { require(impulse.x.isFinite() && impulse.y.isFinite());bodies[id]?.let { it.applyLinearImpulse(box(impulse),it.worldCenter) } }
+    /** True after the latest step when a solid contact supports the body from below. */
     fun isGrounded(id: String) = id in grounded
+    /** Steps 1/60 second, then returns new local transforms without mutating the supplied scene. */
     fun step(scene: Scene): Scene {
         val matrices=scene.worldMatrices()
         scene.nodes.forEach { n -> bodies[n.id]?.let { body ->
             if(body.type!=BodyType.DYNAMIC) {
                 val position=box(matrices.getValue(n.id).map(Vec2()));val rotation=radians(n.transform.rotation)+(n.parent?.let { angle(matrices.getValue(it)) } ?: 0f)
+                checkPose(position,rotation)
                 val animated=generateSequence(n) { current -> current.parent?.let { id -> scene.nodes.find { it.id==id } } }.any { it.component<AnimatorComponent>()!=null }
                 if(body.type==BodyType.STATIC)body.setTransform(position,rotation)
                 else if(animated) { body.linearVelocity=position.sub(body.position).mul(1f/STEP);body.angularVelocity=(rotation-body.angle)/STEP }
@@ -127,6 +140,7 @@ class PhysicsWorld(initial: Scene,private val onContact: (CollisionEvent)->Unit 
         fun update(id: String): Mat3 = worlds.getOrPut(id) {
             var node=changed.getValue(id);val parent=node.parent?.let(::update) ?: Mat3.Identity
             bodies[id]?.let { body ->
+                checkPose(body.position,body.angle)
                 node=node.withComponent(TransformComponent(node.transform.copy(position=parent.inverse().map(pixels(body.position)),rotation=degrees(body.angle-angle(parent)))))
                 changed[id]=node
             }
@@ -135,6 +149,7 @@ class PhysicsWorld(initial: Scene,private val onContact: (CollisionEvent)->Unit 
         scene.nodes.forEach { update(it.id) }
         return scene.copy(nodes=scene.nodes.map { changed.getValue(it.id) })
     }
+    /** World-space fixture outlines and joint anchor connectors for the GL debug pass. */
     fun debugLines(): List<DebugLine> = bodies.values.flatMap { body ->
         val lines=mutableListOf<DebugLine>();var fixture=body.fixtureList
         while(fixture!=null) {
@@ -150,18 +165,24 @@ class PhysicsWorld(initial: Scene,private val onContact: (CollisionEvent)->Unit 
         var joint=world.jointList
         while(joint!=null) { val a=BoxVec();val b=BoxVec();joint.getAnchorA(a);joint.getAnchorB(b);add(DebugLine(pixels(a),pixels(b),Color(1f,.8f,.2f)));joint=joint.next }
     }
+    /** Broad-phase AABB query; callers needing precise overlap should narrow the returned set. */
     fun query(rect: Rect): Set<String> {
+        require(listOf(rect.center.x,rect.center.y,rect.size.x,rect.size.y).all { it.isFinite() } && rect.size.x>0 && rect.size.y>0)
         val hits=mutableSetOf<String>();val half=rect.size*.5f
         world.queryAABB(QueryCallback { fixture -> hits.add(fixture.body.userData as String);true },AABB(box(rect.center-half),box(rect.center+half)))
         return hits
     }
+    /** Closest intersection along a nonzero segment, excluding sensors unless requested. */
     fun raycast(from: Vec2,to: Vec2,includeSensors: Boolean=false): RayHit? {
-        require((to-from).length()>.001f) { "Ray must have positive length" }
+        require(listOf(from.x,from.y,to.x,to.y).all { it.isFinite() } && (to-from).length()>.001f) { "Ray must have positive length" }
         var result: RayHit?=null
         world.raycast(RayCastCallback { fixture,point,normal,fraction ->
             if(fixture.isSensor && !includeSensors)-1f else { result=RayHit(fixture.body.userData as String,pixels(point),Vec2(normal.x,normal.y),fraction);fraction }
         },box(from),box(to))
         return result
+    }
+    private fun checkPose(position: BoxVec,angle: Float) {
+        require(position.x in -10000f..10000f && position.y in -10000f..10000f && angle.isFinite()) { "Physics left the safe ±1000000 pixel world range; reduce velocities, forces or scene scale" }
     }
     private fun box(v: Vec2)=BoxVec(v.x/PIXELS_PER_METRE,v.y/PIXELS_PER_METRE)
     private fun pixels(v: BoxVec)=Vec2(v.x*PIXELS_PER_METRE,v.y*PIXELS_PER_METRE)
