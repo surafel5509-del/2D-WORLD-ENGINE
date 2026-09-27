@@ -67,7 +67,7 @@ import world.engine.render.ShakePreset
             RuntimeChoice("Shake",preset.name,ShakePreset.entries.map { it.name }){preset=ShakePreset.valueOf(it)}
             TextButton(enabled=!s.paused,onClick={vm.shakeCamera(preset)}){Text("Shake camera")}
             TextButton(enabled=!s.paused,onClick={vm.focusCamera(null)}){Text("All cameras")}
-            s.scene.nodes.filter { it.component<CameraComponent>()!=null }.forEach { camera -> TextButton(enabled=!s.paused,onClick={vm.focusCamera(camera.id)}){Text(camera.name)} }
+            s.scene.nodes.filter { it.component<CameraComponent>()?.enabled==true }.forEach { camera -> TextButton(enabled=!s.paused,onClick={vm.focusCamera(camera.id)}){Text(camera.name)} }
         }
         Text(frame?.input?.entries?.joinToString(" · ") { "${it.key}=${"%.1f".format(it.value)}" } ?: "",style=MaterialTheme.typography.labelSmall)
     }

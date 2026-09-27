@@ -1,0 +1,152 @@
+# Phase 3 file inventory
+
+Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/source files do not hash themselves.
+
+## NEW — 28 files
+
+| Path | SHA-256 |
+|---|---|
+| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `df183cba1e727fa5d155d1119376eb2da460e2649979abe3a0145400f3bc7bf6` |
+| `app/src/main/assets/licenses/JBOX2D.txt` | `2895b20e161e2fcf8ae9cdda59f86cc4e4db9136d5fc453b809ce843bd1d0cd9` |
+| `docs/PHASE2_README.md` | `3708ece381fcec2e27c7ce78cc0e96fb1903187dd977f3f2b02cec1bcd834cf3` |
+| `docs/PHASE3.md` | `861015849dba8afc1a947be82fb8536a3f6c0a86c926cf8f7245004d3c664927` |
+| `docs/PHASE3_BASELINE.json` | `d19f72593a83976aa20dee09180932f51a16ac38c119ef699f9dd3df1f49d7c8` |
+| `docs/PHASE3_FILES.md` | `generated; not self-hashed` |
+| `docs/PHASE3_SOURCE.md` | `generated; not self-hashed` |
+| `docs/PHASE3_VERIFICATION.md` | `acee01002d60d1fbc32aaf9779aa271fd9e59b1750a82b8451ab9df1c28b820c` |
+| `editor-animation/src/main/kotlin/world/engine/animationeditor/TimelineEditor.kt` | `9f37aa4d209b30d1a7a950bd3f9b2fb8130d68b83d5a2712745bf80e6c34ae5f` |
+| `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `48100da79f91e10bdc1e73c2614f505d3e1f8f532eea16c3f260f89b7c571838` |
+| `editor-ui/src/main/kotlin/world/engine/editor/RuntimePanels.kt` | `6ecc7fd603996c83994ec3043e70a454fe08e15e05e22aebeebd61cd14ef5aa3` |
+| `editor-viewport/src/main/kotlin/world/engine/viewport/PreviewSession.kt` | `bfa9d9be2664bf90d365c5d790b2d5720d862ee60997001c213bc16b176e660d` |
+| `engine-animation/src/main/kotlin/world/engine/animation/AnimationPlayer.kt` | `3d4483a085b482b9b13990f17ea57e7f79735c9a8244ada550dcb551c5ee0af0` |
+| `engine-animation/src/main/kotlin/world/engine/animation/AnimationPresets.kt` | `b9c840818e767b2db18b687fa5a34fffbfdfa00a88967b7f101c0bf1e2771c6b` |
+| `engine-animation/src/test/kotlin/world/engine/animation/AnimationPlayerTest.kt` | `da0237cf0b68fab64fe1ffdb7b8b069515991faa670d58bc8e189dfd933b19da` |
+| `engine-core/src/main/kotlin/world/engine/core/InputRouter.kt` | `44acc42c4347477f5b456e4f3dad384911123dac3198c8b654aec89602deffe4` |
+| `engine-core/src/main/kotlin/world/engine/core/RuntimeData.kt` | `8f55b705242d78cff21e6eaa3ba64fbb6a80b5632ee82cdbe8d1c7da41e47849` |
+| `engine-core/src/test/kotlin/world/engine/core/RuntimeDataTest.kt` | `84f985707b6c93cb552233b7821e5e621d98b533854516d89636ddaff8faf656` |
+| `engine-physics/src/androidTest/kotlin/world/engine/physics/AlphaColliderTest.kt` | `ec8526159da11ebb4855bfad39760176b56b59364bd9a2acfe0474a0d8a683c5` |
+| `engine-physics/src/main/kotlin/world/engine/physics/ColliderGeometry.kt` | `c33b1557e2337b1035412449ff63bf8a96ff6525d95f020b586b044d58b3072d` |
+| `engine-physics/src/main/kotlin/world/engine/physics/PhysicsWorld.kt` | `7484b6e64a71f0d1de62fe4f8a003361d2c8964139c312217aa9191ec9d65264` |
+| `engine-physics/src/test/kotlin/world/engine/physics/PhysicsWorldTest.kt` | `c5b6ec7db3b65ffb11400de34df8436a6ed79d4ae083100d6565c6e4570bf148` |
+| `engine-render/src/main/kotlin/world/engine/render/CameraRig.kt` | `1ec04ebf57f98ea7135c1b5d4210110608f9b4f5e8b251da1aeccb0f268bc7e4` |
+| `engine-render/src/test/kotlin/world/engine/render/CameraRigTest.kt` | `c67cbbd0eff9bb64d3b10a46799c012321fc721e279255816bdab62a3d5a06f0` |
+| `tools/RuntimeSmoke.kt` | `295b53a980fd580ab8f836d19cf20fd6c3f23618abb9bc3ea4f4077546902652` |
+| `tools/annotate_ci_failure.py` | `4c1cfaeb9d46a1adc082b3f411ffa7a12c190c5485c6fe03b9f5e0823e1551e0` |
+| `tools/report_ci_results.py` | `c6f19722e022fa015736ef72e1b89153b793f9399f92ab32ce346ee695ca74f9` |
+| `tools/write_phase3_delivery.py` | `da9857724f5677de99644db3cd672b100dc9cf6bc59920b9bdd4dfd73d1257b2` |
+
+## CHANGED — 23 files
+
+| Path | SHA-256 |
+|---|---|
+| `.github/workflows/android.yml` | `e75928b38b51a351d115fc868f57430e85bb5c47c5b3ea238d20f21e6eb5021b` |
+| `.gitignore` | `8dc14c72d0dda33f5b0b71b55bbfd8ebb5d62ac868713d3b0bc1c048c676931b` |
+| `README.md` | `562ff9b511f98a88c1db8d727a9cf01bfcb69659e69dd3842a29a1a4bbb9aec9` |
+| `app/build.gradle.kts` | `1f61fb5f336d157f8b89945f6509c0101584771bee513ad4c3126e2e52527a04` |
+| `editor-animation/README.md` | `75e26f1bb73acb29809ab472624578f4ed5525a4e509eb7b8edda5f0889c3853` |
+| `editor-animation/build.gradle.kts` | `6b729348d583a0b0a1534b42b4aeed5604370ed00693b26eb4355b6e50c8d5dd` |
+| `editor-ui/build.gradle.kts` | `3d0e1b82f39a5edbefb303c3e5afcf8984967cee6d1c88e6a7a63f6913676151` |
+| `editor-ui/src/main/kotlin/world/engine/editor/EditorViewModel.kt` | `beed11516312f606ba6f958c121636894e4e3668e0bac28c119c18b027053acb` |
+| `editor-ui/src/main/kotlin/world/engine/editor/WorldEditorApp.kt` | `68ab0cb3763742e1474eda8dfc577a5ff8940634c5eec1b311d6241ae3e0daf2` |
+| `editor-viewport/build.gradle.kts` | `9880d02f4ef9cb68a7f37eaefd15323449720d3942e6afb9127a2682cfce4fbd` |
+| `editor-viewport/src/main/kotlin/world/engine/viewport/WorldViewport.kt` | `0b4c723ca45766b89742d93564063068035b81e997e40c32ce906dd8b7d89fe7` |
+| `engine-animation/README.md` | `91c36ac1c643a3862a6718bfde333210f2a82bd53af607b136d51cb94fe84673` |
+| `engine-animation/build.gradle.kts` | `e8162fb615a52266eac67fdfca2e472326adc9a019343ea4e1c51a8cfaf80b5f` |
+| `engine-core/src/main/kotlin/world/engine/core/Prefab.kt` | `7b96dd66022e6b57303fb940452ff7e0cfe12b73bf7140f9c80320a60bb57da3` |
+| `engine-core/src/main/kotlin/world/engine/core/Scene.kt` | `a895596d70b5d9a57635a8ba659b7950252ebe4c4eba4758cbcc28512f475c07` |
+| `engine-physics/README.md` | `d027250c7ca7c7eb49f288fe8a617d06f011d9db565a51ecfac6b048f6912855` |
+| `engine-physics/build.gradle.kts` | `a2bff2b6e0517c78ea0964540e12f6b0485c6749a3cf6b0f37a4ce6d639725aa` |
+| `engine-render/build.gradle.kts` | `a249a279bd93dee8a6c187bab1d0b5b0ceb237e54fb0d217518ee91989a63401` |
+| `engine-render/src/main/kotlin/world/engine/render/Camera2D.kt` | `7d6a4d59d8132cab7156e0b91cee9e1eda2aeeb5c9db0238f6deb32e8636f2ec` |
+| `engine-render/src/main/kotlin/world/engine/render/SceneRenderer.kt` | `080e77c5fc67a76bf69381842ffaf1b7f0d0f3ee579a1efbb96c09cd79430238` |
+| `engine-render/src/main/kotlin/world/engine/render/SpriteBatch.kt` | `4d2d7075b8d805ebca6a01c31e8ea60f8f53e76b3df949fd5d6032fe1fa5afa6` |
+| `tools/check_engine_standalone.py` | `b29def0b98ae5f366b43b5796899f1675c6d47beb3e46e3c152278fe79207b25` |
+| `tools/validate_structure.py` | `a8369eedb0732fb76ffe6c6790e463a4c5c7386626e116b9f9e1da1957a23cfd` |
+
+## UNCHANGED — 82 files
+
+| Path | SHA-256 |
+|---|---|
+| `app/src/androidTest/kotlin/world/engine/app/EditorSmokeTest.kt` | `13d7226c36de268fa9faaf91b0da01b6879579fc6d5aa8bf018cb4dac6286660` |
+| `app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt` | `61d4760e68f1cc24d5d11bd2cde0ba839bc966daee8db906a4a937a9ba25830b` |
+| `app/src/main/AndroidManifest.xml` | `bc257b5b75ce0167c9550e824a96b3235b0ca6ee311522bc6546f0eda7536b2a` |
+| `app/src/main/kotlin/world/engine/app/MainActivity.kt` | `389e5d7bcbcdaa28d5328a44336ef53b0e8780d471ae3f0eee9aad53520ea3e2` |
+| `app/src/main/res/values/styles.xml` | `04eb151f059d6054eaa700f0783ef7a78cc1f3211819a3f3a0da64f0c3dd713b` |
+| `app/src/main/res/xml/file_paths.xml` | `7e771275d2ffdb130bdefac582c138d1c37f715bc274aa47c1dc3c709ac8b1a1` |
+| `build.gradle.kts` | `8e4d6736f6e5a5dabc5c8f1faf837f0bc03d859760f1cedd4e2ab0301717daef` |
+| `docs/MASTER_SPEC.md` | `84158e302455aa36b4bf358afa7ce11c8effebce3e4864e0fe9b6276be285257` |
+| `docs/PHASE1_README.md` | `d89d29e603dc315ac5c585bfb683fb441785353579d9ae57350256c939c8d968` |
+| `docs/PHASE1_SOURCE.md` | `36d30533e3d3e62abb5ae9b68f32f2fce6c7c27fde7654f0eb8b6ac070f3d22e` |
+| `docs/PHASE2.md` | `27af686a36d3e824c7a89e7b1e10248ec73a3c7b4717f7656ff44fb4465b6547` |
+| `docs/PHASE2_FILES.md` | `91296954de236ccd59955c96ec1b558e47a57fbe3c884bd4aa832e07b77cd531` |
+| `docs/PHASE2_SOURCE.md` | `976579e6a43ca675496de14e1352db829d02a3e57718ef30fc70498f3737352f` |
+| `docs/PHASE2_VERIFICATION.md` | `5acb33e5ab16a77814b77af378b732be0b4ebd083cee6bf2eba673fa4da92f53` |
+| `docs/VERIFICATION.md` | `89640d834bb29c13eb4aa2a4e9f60ce2a8e91e29ff7a02283ec5a1984491d1b3` |
+| `editor-animation/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `editor-assets/README.md` | `bb3f12d6b140bcfa25009be11e2f74049a4854d0aeaba2fe337e48c0a53554ad` |
+| `editor-assets/build.gradle.kts` | `9d9c555168e76f85c200c92021d4ac76e2dc60268acdbc10aca4f0236c765684` |
+| `editor-assets/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `editor-assets/src/main/kotlin/world/engine/asseteditor/AssetActions.kt` | `0e2d581adf2945faf9652fed312194d6de0e7010a673f440f0baac31a8fc2ddb` |
+| `editor-assets/src/main/kotlin/world/engine/asseteditor/AssetBrowser.kt` | `3c17a99264329a698d0ae28071f7657e6d46c7d12a13fb252ecc90f35c1a4cb9` |
+| `editor-assets/src/main/kotlin/world/engine/asseteditor/AssetInspector.kt` | `ecc19797583e3854eb3b7e0ad36395b78bb12dc1a9c9c0b2d68f5a55bd2eaa6c` |
+| `editor-build/README.md` | `aef5e1d8d67cb41c8462164cb7db549080ed34094391265a02ff650771f2accd` |
+| `editor-build/build.gradle.kts` | `f0de30cc9e38f5d712c0f75349b6f28c88e1b2e9e8cb6ad794449fee06cfc7b7` |
+| `editor-build/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `editor-scripting/README.md` | `30a2a9b01b12d0e38ea1206f6c6021661412efb16298e8960e187770e2d5bbe3` |
+| `editor-scripting/build.gradle.kts` | `9fdf536ae1d612b622e9c0dccde9635f331a82ea0d942028600775e36c7987e9` |
+| `editor-scripting/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `editor-ui/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `editor-viewport/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-ai/README.md` | `26e6b320882124636ca3ad49d20443cd370463c6c690fd3561b4472db6f6f1d9` |
+| `engine-ai/build.gradle.kts` | `0cc2cbbb56bfbb31534606e27d5a7f348eadbd3ff36908c842b1d5e823f3dca6` |
+| `engine-ai/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-animation/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-assets/README.md` | `2eefbcc36a6f92d04d79a5c2e44defac207f759c8bda01bba4dd38a1255ad6b0` |
+| `engine-assets/build.gradle.kts` | `34b950ffb92ea29d890354737af2de1cb387cf0245e67af54f8238297758eed9` |
+| `engine-assets/src/androidTest/kotlin/world/engine/assets/AssetPipelineTest.kt` | `75a90542a103e2b1deec133fc5bfd411680a227f5fd958b045407d7ba20c4eea` |
+| `engine-assets/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-assets/src/main/kotlin/world/engine/assets/AssetDatabase.kt` | `da1d7007331293b82e1c96f624f2814d709738cc6a45bb15f6832f555233555f` |
+| `engine-assets/src/main/kotlin/world/engine/assets/AssetRepository.kt` | `d635ea2ac521369f3d10f5ce31e184864edf421feecbf5a6d01c80c7c5eb4c20` |
+| `engine-assets/src/main/kotlin/world/engine/assets/ImageOps.kt` | `d68f467d46fa5d043bafcf0834b66b6f2318ba779dad3aa9d43257e9b245c2d2` |
+| `engine-assets/src/main/kotlin/world/engine/assets/ProceduralAssets.kt` | `7e527f2aebb5dcb713417795fbd1397ee215a4a8ff284dcba1fd0282b970b449` |
+| `engine-assets/src/main/kotlin/world/engine/assets/SpriteSlicer.kt` | `093d47c5338fa638c8820e23a02ee7d07a9a08795c597c2123224d866a66f9fa` |
+| `engine-audio/README.md` | `45e07672906786267572864ed1a51e75543b1b56e7a5b22662d711026259a985` |
+| `engine-audio/build.gradle.kts` | `bfaf836f9202cbb32531411e53d1c7b77a52fed759602310a759a9b1a07963d9` |
+| `engine-audio/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-build/README.md` | `294564e7dc15de88695978fac950cecc8bcf6a6b850a448aec5a6e911048ed34` |
+| `engine-build/build.gradle.kts` | `17aeae60c6b623b92286ed9387aa7c0813ff8bb1c9adb3b647653c5bc46087a9` |
+| `engine-build/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-core/build.gradle.kts` | `2e26d4eee1270e12462b194eed513363186e3b9cccad5beba0684ae4914be53b` |
+| `engine-core/src/test/kotlin/world/engine/core/PrefabTest.kt` | `6546ff2c977229c864add8e57e9210ac57dbf0ceae31aca1c01bc24a6c65e6d0` |
+| `engine-core/src/test/kotlin/world/engine/core/SceneTest.kt` | `33f5002a1fd607090c875a75c0a95f87ec5e1ad936d93887fb4cbf2b10fbbbcb` |
+| `engine-io/build.gradle.kts` | `73c42c113f5886640f5872cea8d44ec1f13b737556304a2631931e0b8fc539f0` |
+| `engine-io/src/androidTest/kotlin/world/engine/io/ProjectStoreTest.kt` | `f4d6c61497d700ac13894956421f0e5fc3a4992bb460f945e318419f14e3983b` |
+| `engine-io/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-io/src/main/kotlin/world/engine/io/ProjectStore.kt` | `e38a8fdb0727a6d007c1646a8d83a75d6eb156c7478a3456d8aa0d4646265fbd` |
+| `engine-math/build.gradle.kts` | `08590c5230e93208a74d3eecdb41d14eb217e1bdc5b5bba8e2b7dbad969473e7` |
+| `engine-math/src/main/kotlin/world/engine/math/Math.kt` | `92bf644a6c65322c2b8376d77fb6b5eec057667ef440e89f7dbe635937bc709f` |
+| `engine-math/src/test/kotlin/world/engine/math/MathTest.kt` | `851df9fa94b2a32099feab9df8d362858e2ca13906432f4eab829df09817ac2e` |
+| `engine-particles/README.md` | `9bb1ea34ca3bc03c62d5ee953582560ba67d556242d59b176ecc3c9e20a9e920` |
+| `engine-particles/build.gradle.kts` | `76286a1a1892cc9003acf2ea4e6b157f5b6fd5e4f3951300020731f17a97e63e` |
+| `engine-particles/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-physics/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-render/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-render/src/main/kotlin/world/engine/render/TextureLoader.kt` | `c800e18ebc4b351f4d494c5f60596469849dcde4ed05f3dadbe2574b8be2c764` |
+| `engine-scripting/README.md` | `8d1ee12919c3d6c2b4e19dcac25970bad8908795de77795c782f7d2eaae36bd6` |
+| `engine-scripting/build.gradle.kts` | `c3d70a1b157af64a52aa31b747964cb3659101ef3dc1e07dd16feae4247ea3fd` |
+| `engine-scripting/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-tilemap/README.md` | `bbf3362e806d6c910871aaf5f2a1191ea986f8cf62ba555b7db061fd1e258235` |
+| `engine-tilemap/build.gradle.kts` | `2327a5c407399562c83e2ecee0070bd08da8212d917ce30d9da74d18879945ac` |
+| `engine-tilemap/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `engine-ui/README.md` | `202ca8258b36a0f325f8bcf457a3c421559844bf47f2a0c1519718afc52a3cef` |
+| `engine-ui/build.gradle.kts` | `c627743a1af0a7fff5e6c495b6b983df6e2f84c844954c542c8cce31393d7aa7` |
+| `engine-ui/src/main/AndroidManifest.xml` | `571f2735faf5e857752ee057ac8ef63425576a721616c60b86ee5d4c0a2d682f` |
+| `gradle.properties` | `e43a00491832254a35cf5a979ef6de17f78c4e159d446be39319d2e3d3e46325` |
+| `gradle/wrapper/gradle-wrapper.jar` | `cb0da6751c2b753a16ac168bb354870ebb1e162e9083f116729cec9c781156b8` |
+| `gradle/wrapper/gradle-wrapper.properties` | `712d9bc912d4b0d42b0faf8c6afeed13ae31ced75ca28463b1dfc4ced1a4bc9a` |
+| `gradlew` | `bf2ca3f9d7c42b831380b47ab9e7594ddc33054b3e09253a0c4862353d5d604b` |
+| `gradlew.bat` | `e54283c0f86074fa408c1161d08ef8f63992323a8c940c66f3626e8abc5bd8cc` |
+| `settings.gradle.kts` | `febdf83ff285b42d48a3be287756d04f91acaa86fa61a1fa10c46abef7f5be4a` |
+| `tools/CoreSmoke.kt` | `00e65dc98ad5ad2cd4420b4bce91a455917f1fab8ef72098b5782339af07cb8f` |
+| `tools/check_asset_schema.py` | `2df9a654e48f4c27b14f5d844a91582eb72bd445daafd2f8b5b24552660bdb39` |
+

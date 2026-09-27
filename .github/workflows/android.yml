@@ -26,6 +26,9 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew :engine-math:test :engine-core:test :engine-animation:testDebugUnitTest :engine-physics:testDebugUnitTest :engine-render:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :engine-assets:assembleDebugAndroidTest :engine-io:assembleDebugAndroidTest :engine-physics:assembleDebugAndroidTest --console=plain --stacktrace 2>&1 | tee ci-build.log
+      - name: Report unit results
+        if: always()
+        run: python3 tools/report_ci_results.py unit
       - name: Annotate build failures
         if: failure()
         run: python3 tools/annotate_ci_failure.py ci-build.log
@@ -60,6 +63,9 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: bash -eo pipefail -c './gradlew :engine-physics:connectedDebugAndroidTest :engine-assets:connectedDebugAndroidTest :engine-io:connectedDebugAndroidTest :app:connectedDebugAndroidTest --console=plain --stacktrace 2>&1 | tee ci-device.log'
+      - name: Report device results
+        if: always()
+        run: python3 tools/report_ci_results.py device
       - name: Annotate device failures
         if: failure()
         run: python3 tools/annotate_ci_failure.py ci-device.log
