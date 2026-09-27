@@ -108,7 +108,11 @@ fun Scene.validateRuntimeData() {
             require(body.gravityScale in -10f..10f && body.linearDamping in 0f..100f)
             require(node.component<ParallaxComponent>()==null) { "Physics bodies cannot use visual parallax" }
         }
-        node.component<InputControllerComponent>()?.let { require(listOf(it.horizontal,it.vertical,it.jump).all { name -> name.isNotBlank() && name.length<=64 });require(it.speed.isFinite() && it.speed in 0f..5000f && it.jumpSpeed.isFinite() && it.jumpSpeed in 0f..5000f) }
+        node.component<InputControllerComponent>()?.let {
+            val kind=node.component<RigidBodyComponent>()?.kind
+            require(kind!=BodyKind.STATIC) { "Movement controllers cannot move static bodies" }
+            require(it.kind!=ControllerKind.PLATFORMER || kind==BodyKind.DYNAMIC) { "Platformer controllers require a dynamic rigid body" }
+            require(listOf(it.horizontal,it.vertical,it.jump).all { name -> name.isNotBlank() && name.length<=64 });require(it.speed.isFinite() && it.speed in 0f..5000f && it.jumpSpeed.isFinite() && it.jumpSpeed in 0f..5000f) }
         node.component<ParallaxComponent>()?.let { require(it.factor.x.isFinite() && it.factor.y.isFinite()) }
         node.component<CameraComponent>()?.let { c ->
             require(c.follow==null || c.follow in byNode) { "Missing camera follow target" }

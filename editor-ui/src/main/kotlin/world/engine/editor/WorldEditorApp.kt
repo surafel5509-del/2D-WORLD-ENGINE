@@ -55,7 +55,7 @@ import world.engine.asseteditor.AssetBrowser
         LaunchedEffect(s.project) { if(s.project!=null) wizard=false }
         s.error?.let { message -> AlertDialog(onDismissRequest=vm::dismissError,title={Text("Action needs attention")},text={Text(message)},confirmButton={TextButton(onClick=vm::dismissError){Text("OK")}}) }
         if(s.recovery!=null || s.recoveryIssue!=null) AlertDialog(onDismissRequest={},title={Text("Recover unsaved scene?")},text={Text(s.recoveryIssue ?: "A recovery snapshot differs from the saved scene. Restore it, or keep the last explicit save. Restoring does not overwrite your saved file until you save.")},confirmButton={TextButton(enabled=!s.busy && s.recovery!=null,onClick={vm.recover(true)}){Text("Restore")}},dismissButton={TextButton(enabled=!s.busy,onClick={vm.recover(false)}){Text("Keep saved")}})
-        s.removeRuntimeType?.let { type -> AlertDialog(onDismissRequest=vm::cancelRuntimeRemoval,title={Text("Remove $type?")},text={Text("Removing a body also removes its connected joints. This scene edit can be undone.")},confirmButton={TextButton(onClick=vm::confirmRuntimeRemoval){Text("Remove")}},dismissButton={TextButton(onClick=vm::cancelRuntimeRemoval){Text("Cancel")}}) }
+        s.removeRuntimeType?.let { type -> AlertDialog(onDismissRequest=vm::cancelRuntimeRemoval,title={Text("Remove $type?")},text={Text("Removing a body also removes its connected joints and movement controller. This scene edit can be undone.")},confirmButton={TextButton(onClick=vm::confirmRuntimeRemoval){Text("Remove")}},dismissButton={TextButton(onClick=vm::cancelRuntimeRemoval){Text("Cancel")}}) }
         if(exit) AlertDialog(onDismissRequest={exit=false},title={Text("Return to projects?")},text={Text(if(s.dirty) "Your scene has unsaved changes." else "The scene is saved.")},confirmButton={TextButton(enabled=!s.busy,onClick={exit=false;vm.close(false)}){Text("Save & close")}},dismissButton={Row { TextButton(onClick={exit=false}){Text("Cancel")}; TextButton(enabled=!s.busy,onClick={exit=false;vm.close(true)}){Text("Discard & close")} }})
     }
 }
@@ -142,13 +142,14 @@ import world.engine.asseteditor.AssetBrowser
         if(playing)PlayStatus(s,vm)
         BoxWithConstraints(Modifier.weight(1f)) {
             val wide=maxWidth>=840.dp
+            val panelHeight=(maxHeight*.5f).coerceAtMost(360.dp)
             Column {
                 Row(Modifier.weight(1f)) {
                     if(wide && !playing)Box(Modifier.width(190.dp).fillMaxHeight()){Hierarchy(s,vm)}
                     Box(Modifier.weight(1f).fillMaxHeight()) {
                         AndroidView(factory={viewport},modifier=Modifier.fillMaxSize(),update={view ->
                             view.onSelect=vm::select;view.onMove=vm::move;view.onError=vm::report;view.onAssetDrop=vm::placeAsset
-                            view.onColliderPoint=vm::addColliderPoint;view.onViewportSize=vm::viewportResize;view.onPhysicalInput=vm::inputPhysical;view.onReleaseInput=vm::releaseInput
+                            view.onColliderPoint=vm::addColliderPoint;view.onViewportSize=vm::viewportResize;view.onPhysicalInput=vm::inputPhysical;view.onReleaseInput=vm::releaseInput;view.onDeviceRemoved=vm::releaseDeviceInput
                             view.onContext={id -> vm.select(id);if(id!=null){panel="Inspector";delete=true}}
                             view.isEnabled=!s.busy && s.recovery==null && s.recoveryIssue==null
                             view.update(displayed,s.selected,project.directory,paths,playing,s.drawCollider,s.preview?.views.orEmpty(),lines)
@@ -162,7 +163,7 @@ import world.engine.asseteditor.AssetBrowser
                     Row(Modifier.horizontalScroll(rememberScrollState())) {
                         (if(wide)listOf("Assets","Animation","Console","Viewport") else listOf("Hierarchy","Inspector","Assets","Animation","Console","Viewport")).forEach { label -> TextButton(enabled=!s.drawCollider,onClick={panel=label}){Text(if(panel==label)"[$label]" else label)} }
                     }
-                    if(panel!="Viewport" && !s.drawCollider)Box(Modifier.fillMaxWidth().height((maxHeight*.5f).coerceAtMost(360.dp))) {
+                    if(panel!="Viewport" && !s.drawCollider)Box(Modifier.fillMaxWidth().height(panelHeight)) {
                         when(panel) {
                             "Hierarchy" -> if(wide)Console(s,Modifier.fillMaxSize()) else Hierarchy(s,vm)
                             "Inspector" -> if(wide)Console(s,Modifier.fillMaxSize()) else Inspector(s,vm){delete=true}

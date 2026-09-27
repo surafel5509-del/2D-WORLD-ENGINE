@@ -24,6 +24,12 @@ class InputRouter(private val mapping: InputMap) {
     }
     /** Focus/pause cancellation releases held sources and cannot inject a stale press on resume. */
     @Synchronized fun releaseAll() { physical.clear();touch.clear();pressed.clear();resolve() }
+    /** Device disconnect cancels only that device, preserving other held controls. */
+    @Synchronized fun releaseDevice(device: Int) {
+        val removed=physical.keys.filter { it.third==device }.toSet()
+        val affected=mapping.bindings.filter { b -> removed.any { it.first==b.source && it.second==b.code } }.map { it.action }.toSet()
+        physical.keys.removeAll(removed);resolve();pressed.removeAll(affected-active)
+    }
     private fun resolve() {
         val next=mutableMapOf<String,Float>()
         mapping.bindings.forEach { b ->

@@ -24,12 +24,12 @@ import world.engine.math.*
             if(node.sprite!=null)TextButton(onClick=vm::separateAnimatedVisual){Text("Create physics parent + visual child")}
         } else BodyEditor(node,body,vm,draw)
         val controller=node.component<InputControllerComponent>()
-        if(controller==null)TextButton(onClick={vm.updateNode(node.withComponent(InputControllerComponent()))}){Text("Add input controller")}
+        if(controller==null)TextButton(enabled=body?.kind!=BodyKind.STATIC,onClick={vm.updateNode(node.withComponent(InputControllerComponent(kind=if(body?.kind==BodyKind.DYNAMIC)ControllerKind.PLATFORMER else ControllerKind.TOP_DOWN)))}){Text("Add input controller")}
         else key(node.id,controller) {
             var speed by remember { mutableStateOf(controller.speed.toString()) };var jump by remember { mutableStateOf(controller.jumpSpeed.toString()) }
             var horizontal by remember { mutableStateOf(controller.horizontal) };var vertical by remember { mutableStateOf(controller.vertical) };var jumpAction by remember { mutableStateOf(controller.jump) }
             Text("Input controller")
-            RuntimeChoice("Mode",controller.kind.name,ControllerKind.entries.map { it.name }){vm.updateNode(node.withComponent(controller.copy(kind=ControllerKind.valueOf(it))))}
+            RuntimeChoice("Mode",controller.kind.name,(if(body?.kind==BodyKind.DYNAMIC)ControllerKind.entries else listOf(ControllerKind.TOP_DOWN)).map { it.name }){vm.updateNode(node.withComponent(controller.copy(kind=ControllerKind.valueOf(it))))}
             RuntimeField("Speed (pixels/second)",speed){speed=it};if(controller.kind==ControllerKind.PLATFORMER)RuntimeField("Jump speed",jump){jump=it}
             RuntimeField("Horizontal action",horizontal){horizontal=it};if(controller.kind==ControllerKind.TOP_DOWN)RuntimeField("Vertical action",vertical){vertical=it};if(controller.kind==ControllerKind.PLATFORMER)RuntimeField("Jump action",jumpAction){jumpAction=it}
             TextButton(onClick={vm.parseRuntime { vm.updateNode(node.withComponent(controller.copy(speed=speed.toFloat(),jumpSpeed=jump.toFloat(),horizontal=horizontal,vertical=vertical,jump=jumpAction))) }}){Text("Apply controller")}
@@ -73,7 +73,7 @@ import world.engine.math.*
         TextButton(enabled=body.colliders.size<32,onClick={vm.updateNode(node.withComponent(body.copy(colliders=body.colliders+Collider(size=node.sprite?.size ?: Vec2(48f,48f)))))}){Text("Add compound part")}
         TextButton(onClick=draw){Text("Draw convex polygon in viewport")}
         TextButton(enabled=node.sprite!=null,onClick=vm::alphaCollider){Text("Replace colliders with alpha hull")}
-        TextButton(onClick={vm.removeRuntimeComponent(RigidBodyComponent::class.java)}){Text("Remove body and connected joints")}
+        TextButton(onClick={vm.removeRuntimeComponent(RigidBodyComponent::class.java)}){Text("Remove body, controller and joints")}
     }
 }
 @Composable private fun ColliderEditor(index: Int,c: Collider,removable: Boolean,apply: (Collider)->Unit,remove: ()->Unit,vm: EditorViewModel) {

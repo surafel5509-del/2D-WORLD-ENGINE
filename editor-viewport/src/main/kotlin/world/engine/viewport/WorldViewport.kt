@@ -1,6 +1,9 @@
 package world.engine.viewport
 
 import android.content.Context
+import android.hardware.input.InputManager
+import android.os.Handler
+import android.os.Looper
 import android.opengl.GLSurfaceView
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -25,6 +28,13 @@ class WorldViewport(context: Context): GLSurfaceView(context) {
     var onColliderPoint: (Vec2)->Unit = {}
     var onPhysicalInput: (InputSource,Int,Float,Int)->Unit = { _,_,_,_-> }
     var onReleaseInput: ()->Unit = {}
+    var onDeviceRemoved: (Int)->Unit = {}
+    private val inputs=context.getSystemService(Context.INPUT_SERVICE) as InputManager
+    private val devices=object: InputManager.InputDeviceListener {
+        override fun onInputDeviceAdded(deviceId: Int)=Unit
+        override fun onInputDeviceChanged(deviceId: Int) { onDeviceRemoved(deviceId) }
+        override fun onInputDeviceRemoved(deviceId: Int) { onDeviceRemoved(deviceId) }
+    }
     var onViewportSize: (Int,Int)->Unit = { _,_-> }
     private var playing=false
     private var drawing=false
@@ -116,6 +126,8 @@ class WorldViewport(context: Context): GLSurfaceView(context) {
         return true
     }
 
+    override fun onAttachedToWindow() { super.onAttachedToWindow();inputs.registerInputDeviceListener(devices,Handler(Looper.getMainLooper())) }
+    override fun onDetachedFromWindow() { inputs.unregisterInputDeviceListener(devices);onReleaseInput();super.onDetachedFromWindow() }
     override fun onSizeChanged(w: Int,h: Int,oldw: Int,oldh: Int) { super.onSizeChanged(w,h,oldw,oldh);onViewportSize(w,h) }
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) { super.onWindowFocusChanged(hasWindowFocus);if(!hasWindowFocus)onReleaseInput() }
     override fun onKeyDown(keyCode: Int,event: KeyEvent): Boolean {

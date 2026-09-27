@@ -300,7 +300,7 @@ class EditorViewModel(application: Application): AndroidViewModel(application), 
     fun confirmRuntimeRemoval() {
         val s=mutable.value;val node=s.scene.nodes.find { it.id==s.selected } ?: return
         val type=s.removeRuntimeType;cancelRuntimeRemoval()
-        val updated=Prefabs.override(node.copy(components=node.components.filterNot { it.javaClass.simpleName==type }),"runtime")
+        val updated=Prefabs.override(node.copy(components=node.components.filterNot { it.javaClass.simpleName==type || (type==RigidBodyComponent::class.java.simpleName && it is InputControllerComponent) }),"runtime")
         edit(s.scene.replace(updated).copy(joints=if(type==RigidBodyComponent::class.java.simpleName)s.scene.joints.filterNot { it.bodyA==node.id || it.bodyB==node.id } else s.scene.joints,activeCamera=if(type==CameraComponent::class.java.simpleName && s.scene.activeCamera==node.id)null else s.scene.activeCamera))
     }
     fun separateAnimatedVisual() {
@@ -382,6 +382,7 @@ class EditorViewModel(application: Application): AndroidViewModel(application), 
     fun viewportResize(width: Int,height: Int) { viewportSize=width to height;session?.resize(width,height) }
     fun inputPhysical(source: InputSource,code: Int,value: Float,device: Int) { if(!mutable.value.paused || value==0f)session?.input?.physical(source,code,value,device) }
     fun inputTouch(action: String,value: Float) { if(!mutable.value.paused || value==0f)session?.input?.touch(action,value) }
+    fun releaseDeviceInput(device: Int) { session?.input?.releaseDevice(device) }
     fun releaseInput() { session?.input?.releaseAll() }
     fun shakeCamera(preset: ShakePreset) { session?.shake(preset) }
     fun focusCamera(id: String?) { session?.focusCamera(id) }
