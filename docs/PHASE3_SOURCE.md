@@ -63,10 +63,14 @@ on:
   pull_request:
   push:
     branches: [arena/01a0e43a-2d-world-engine]
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
   compile-and-unit-test:
+    timeout-minutes: 20
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -100,6 +104,7 @@ jobs:
             app/build/outputs/apk/debug/*.apk
             **/build/reports/tests/
   device-tests:
+    timeout-minutes: 25
     runs-on: ubuntu-24.04
     needs: compile-and-unit-test
     steps:
@@ -323,6 +328,11 @@ import java.io.File
 
 class PlayModeTest {
     @get:Rule val compose=createAndroidComposeRule<MainActivity>()
+    private fun step(label: String): Long? {
+        val node=compose.onAllNodesWithText("$label · step",substring=true).fetchSemanticsNodes().firstOrNull() ?: return null
+        val text=node.config[SemanticsProperties.Text].joinToString { it.text }
+        return Regex("step ([0-9]+)").find(text)?.groupValues?.get(1)?.toLongOrNull()
+    }
     @Test fun realPlayPauseStepStopDoesNotOverwriteSavedScene() {
         val projects=File(compose.activity.filesDir,"2DWorldProjects")
         val before=projects.listFiles().orEmpty().map { it.name }.toSet()
@@ -335,10 +345,13 @@ class PlayModeTest {
         val project=projects.listFiles().orEmpty().single { it.name !in before }
         val scene=File(project,"Scenes/Main.json");val saved=scene.readBytes()
         compose.onNodeWithText("Play",substring=false).performScrollTo().performClick()
-        compose.waitUntil(15000){compose.onAllNodesWithText("PLAY · step",substring=true).fetchSemanticsNodes().isNotEmpty()}
+        compose.waitUntil(15000){(step("PLAY") ?: 0)>=12}
+        compose.onNodeWithText("bodies 7 · joints 1",substring=true).assertExists()
         compose.onNodeWithText("Pause",substring=false).performScrollTo().performClick()
         compose.waitUntil(15000){compose.onAllNodesWithText("PAUSED · step",substring=true).fetchSemanticsNodes().isNotEmpty()}
+        val pausedStep=requireNotNull(step("PAUSED"))
         compose.onNodeWithText("Step",substring=false).performScrollTo().performClick()
+        compose.waitUntil(15000){(step("PAUSED") ?: 0)>pausedStep}
         compose.onNodeWithText("Stop",substring=false).performScrollTo().performClick()
         compose.waitUntil(15000){compose.onAllNodesWithText("MyGame • saved").fetchSemanticsNodes().isNotEmpty()}
         assertArrayEquals(saved,scene.readBytes())
@@ -603,7 +616,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 
 | Path | SHA-256 |
 |---|---|
-| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `6846da7e1fa1106002314a8f577b14123d6392737c4b7d32c1c8c90726596b93` |
+| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `dd390594c76505d060da4588330a63609ef21915fd9028baaa808206da6716be` |
 | `app/src/main/assets/licenses/JBOX2D.txt` | `2895b20e161e2fcf8ae9cdda59f86cc4e4db9136d5fc453b809ce843bd1d0cd9` |
 | `docs/PHASE2_README.md` | `3708ece381fcec2e27c7ce78cc0e96fb1903187dd977f3f2b02cec1bcd834cf3` |
 | `docs/PHASE3.md` | `861015849dba8afc1a947be82fb8536a3f6c0a86c926cf8f7245004d3c664927` |
@@ -612,7 +625,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 | `docs/PHASE3_SOURCE.md` | `generated; not self-hashed` |
 | `docs/PHASE3_VERIFICATION.md` | `3d1b04d1699ad34621aaa880acb24ff669b6664d587f461c315024f512f20d32` |
 | `editor-animation/src/main/kotlin/world/engine/animationeditor/TimelineEditor.kt` | `9f37aa4d209b30d1a7a950bd3f9b2fb8130d68b83d5a2712745bf80e6c34ae5f` |
-| `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `48100da79f91e10bdc1e73c2614f505d3e1f8f532eea16c3f260f89b7c571838` |
+| `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `06d2aaf3307ecd1cd0473fd74f6e0eaee912f4539fb347247a5c59027b9a2d1d` |
 | `editor-ui/src/main/kotlin/world/engine/editor/RuntimePanels.kt` | `6ecc7fd603996c83994ec3043e70a454fe08e15e05e22aebeebd61cd14ef5aa3` |
 | `editor-viewport/src/main/kotlin/world/engine/viewport/PreviewSession.kt` | `bfa9d9be2664bf90d365c5d790b2d5720d862ee60997001c213bc16b176e660d` |
 | `engine-animation/src/main/kotlin/world/engine/animation/AnimationPlayer.kt` | `3d4483a085b482b9b13990f17ea57e7f79735c9a8244ada550dcb551c5ee0af0` |
@@ -636,7 +649,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 
 | Path | SHA-256 |
 |---|---|
-| `.github/workflows/android.yml` | `e75928b38b51a351d115fc868f57430e85bb5c47c5b3ea238d20f21e6eb5021b` |
+| `.github/workflows/android.yml` | `da600dd32a6cb798fcfda2a1cebe9b4185ccac1cbae3c74d0578403ab088c06c` |
 | `.gitignore` | `8dc14c72d0dda33f5b0b71b55bbfd8ebb5d62ac868713d3b0bc1c048c676931b` |
 | `README.md` | `cd0ea11c1162dcac0d2ea1a0a81bb8f710c42774461ffe21130a3f43b4c39e4a` |
 | `app/build.gradle.kts` | `1f61fb5f336d157f8b89945f6509c0101584771bee513ad4c3126e2e52527a04` |
@@ -1430,7 +1443,7 @@ import world.engine.render.ShakePreset
     var stick by remember { mutableStateOf(Offset.Zero) }
     val currentMove by rememberUpdatedState(move)
     Canvas(Modifier.size(132.dp).semantics { contentDescription="Virtual joystick. Drag to move; keyboard and gamepad mappings are also supported." }.pointerInput(Unit) {
-        fun update(position: Offset) { val center=Offset(size.width/2f,size.height/2f);val delta=(position-center)/(size.width*.4f);val length=delta.getDistance();stick=if(length>1f)delta/length else delta;currentMove(Vec2(stick.x,-stick.y)) }
+        fun update(position: Offset) { val center=Offset(size.width/2f,size.height/2f);val delta=(position-center)/(minOf(size.width,size.height)*.4f);val length=delta.getDistance();stick=if(length>1f)delta/length else delta;currentMove(Vec2(stick.x,-stick.y)) }
         detectDragGestures(onDragStart={update(it)},onDragEnd={stick=Offset.Zero;currentMove(Vec2())},onDragCancel={stick=Offset.Zero;currentMove(Vec2())},onDrag={change,_->change.consume();update(change.position)})
     }) {
         drawCircle(Color(0x99445566),size.minDimension*.47f)

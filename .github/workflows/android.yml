@@ -4,10 +4,14 @@ on:
   pull_request:
   push:
     branches: [arena/01a0e43a-2d-world-engine]
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
   compile-and-unit-test:
+    timeout-minutes: 20
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -41,6 +45,7 @@ jobs:
             app/build/outputs/apk/debug/*.apk
             **/build/reports/tests/
   device-tests:
+    timeout-minutes: 25
     runs-on: ubuntu-24.04
     needs: compile-and-unit-test
     steps:

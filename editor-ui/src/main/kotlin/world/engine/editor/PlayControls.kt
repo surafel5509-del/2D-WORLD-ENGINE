@@ -38,7 +38,7 @@ import world.engine.render.ShakePreset
     var stick by remember { mutableStateOf(Offset.Zero) }
     val currentMove by rememberUpdatedState(move)
     Canvas(Modifier.size(132.dp).semantics { contentDescription="Virtual joystick. Drag to move; keyboard and gamepad mappings are also supported." }.pointerInput(Unit) {
-        fun update(position: Offset) { val center=Offset(size.width/2f,size.height/2f);val delta=(position-center)/(size.width*.4f);val length=delta.getDistance();stick=if(length>1f)delta/length else delta;currentMove(Vec2(stick.x,-stick.y)) }
+        fun update(position: Offset) { val center=Offset(size.width/2f,size.height/2f);val delta=(position-center)/(minOf(size.width,size.height)*.4f);val length=delta.getDistance();stick=if(length>1f)delta/length else delta;currentMove(Vec2(stick.x,-stick.y)) }
         detectDragGestures(onDragStart={update(it)},onDragEnd={stick=Offset.Zero;currentMove(Vec2())},onDragCancel={stick=Offset.Zero;currentMove(Vec2())},onDrag={change,_->change.consume();update(change.position)})
     }) {
         drawCircle(Color(0x99445566),size.minDimension*.47f)

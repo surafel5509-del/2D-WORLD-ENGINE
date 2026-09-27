@@ -6,7 +6,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 
 | Path | SHA-256 |
 |---|---|
-| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `6846da7e1fa1106002314a8f577b14123d6392737c4b7d32c1c8c90726596b93` |
+| `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `dd390594c76505d060da4588330a63609ef21915fd9028baaa808206da6716be` |
 | `app/src/main/assets/licenses/JBOX2D.txt` | `2895b20e161e2fcf8ae9cdda59f86cc4e4db9136d5fc453b809ce843bd1d0cd9` |
 | `docs/PHASE2_README.md` | `3708ece381fcec2e27c7ce78cc0e96fb1903187dd977f3f2b02cec1bcd834cf3` |
 | `docs/PHASE3.md` | `861015849dba8afc1a947be82fb8536a3f6c0a86c926cf8f7245004d3c664927` |
@@ -15,7 +15,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 | `docs/PHASE3_SOURCE.md` | `generated; not self-hashed` |
 | `docs/PHASE3_VERIFICATION.md` | `3d1b04d1699ad34621aaa880acb24ff669b6664d587f461c315024f512f20d32` |
 | `editor-animation/src/main/kotlin/world/engine/animationeditor/TimelineEditor.kt` | `9f37aa4d209b30d1a7a950bd3f9b2fb8130d68b83d5a2712745bf80e6c34ae5f` |
-| `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `48100da79f91e10bdc1e73c2614f505d3e1f8f532eea16c3f260f89b7c571838` |
+| `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `06d2aaf3307ecd1cd0473fd74f6e0eaee912f4539fb347247a5c59027b9a2d1d` |
 | `editor-ui/src/main/kotlin/world/engine/editor/RuntimePanels.kt` | `6ecc7fd603996c83994ec3043e70a454fe08e15e05e22aebeebd61cd14ef5aa3` |
 | `editor-viewport/src/main/kotlin/world/engine/viewport/PreviewSession.kt` | `bfa9d9be2664bf90d365c5d790b2d5720d862ee60997001c213bc16b176e660d` |
 | `engine-animation/src/main/kotlin/world/engine/animation/AnimationPlayer.kt` | `3d4483a085b482b9b13990f17ea57e7f79735c9a8244ada550dcb551c5ee0af0` |
@@ -39,7 +39,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 
 | Path | SHA-256 |
 |---|---|
-| `.github/workflows/android.yml` | `e75928b38b51a351d115fc868f57430e85bb5c47c5b3ea238d20f21e6eb5021b` |
+| `.github/workflows/android.yml` | `da600dd32a6cb798fcfda2a1cebe9b4185ccac1cbae3c74d0578403ab088c06c` |
 | `.gitignore` | `8dc14c72d0dda33f5b0b71b55bbfd8ebb5d62ac868713d3b0bc1c048c676931b` |
 | `README.md` | `cd0ea11c1162dcac0d2ea1a0a81bb8f710c42774461ffe21130a3f43b4c39e4a` |
 | `app/build.gradle.kts` | `1f61fb5f336d157f8b89945f6509c0101584771bee513ad4c3126e2e52527a04` |

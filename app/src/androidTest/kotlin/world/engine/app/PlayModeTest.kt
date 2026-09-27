@@ -10,6 +10,11 @@ import java.io.File
 
 class PlayModeTest {
     @get:Rule val compose=createAndroidComposeRule<MainActivity>()
+    private fun step(label: String): Long? {
+        val node=compose.onAllNodesWithText("$label · step",substring=true).fetchSemanticsNodes().firstOrNull() ?: return null
+        val text=node.config[SemanticsProperties.Text].joinToString { it.text }
+        return Regex("step ([0-9]+)").find(text)?.groupValues?.get(1)?.toLongOrNull()
+    }
     @Test fun realPlayPauseStepStopDoesNotOverwriteSavedScene() {
         val projects=File(compose.activity.filesDir,"2DWorldProjects")
         val before=projects.listFiles().orEmpty().map { it.name }.toSet()
@@ -22,10 +27,13 @@ class PlayModeTest {
         val project=projects.listFiles().orEmpty().single { it.name !in before }
         val scene=File(project,"Scenes/Main.json");val saved=scene.readBytes()
         compose.onNodeWithText("Play",substring=false).performScrollTo().performClick()
-        compose.waitUntil(15000){compose.onAllNodesWithText("PLAY · step",substring=true).fetchSemanticsNodes().isNotEmpty()}
+        compose.waitUntil(15000){(step("PLAY") ?: 0)>=12}
+        compose.onNodeWithText("bodies 7 · joints 1",substring=true).assertExists()
         compose.onNodeWithText("Pause",substring=false).performScrollTo().performClick()
         compose.waitUntil(15000){compose.onAllNodesWithText("PAUSED · step",substring=true).fetchSemanticsNodes().isNotEmpty()}
+        val pausedStep=requireNotNull(step("PAUSED"))
         compose.onNodeWithText("Step",substring=false).performScrollTo().performClick()
+        compose.waitUntil(15000){(step("PAUSED") ?: 0)>pausedStep}
         compose.onNodeWithText("Stop",substring=false).performScrollTo().performClick()
         compose.waitUntil(15000){compose.onAllNodesWithText("MyGame • saved").fetchSemanticsNodes().isNotEmpty()}
         assertArrayEquals(saved,scene.readBytes())
