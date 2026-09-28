@@ -168,7 +168,7 @@ Native Android 2D scene editor, written in Kotlin with Jetpack Compose and OpenG
 
 ## Current status
 
-**Phase 3 runtime and authoring source is now implemented. Full Android app build and device acceptance are being checked; see the Phase 3 delivery guide for final status.** Do not treat this as a fully verified or finished Unity-class engine.
+**Phase 3 runtime and authoring source is implemented. The full Android build, 31 JVM tests and 15 API 34 emulator tests passed in CI. Physical-device acceptance and cross-phase sound/particle/script event integrations remain outstanding; see the Phase 3 guide.** Do not treat this as a fully verified or finished Unity-class engine.
 
 - Phase 1: dashboard, project wizard, scene editing, touch viewport, image import, atomic JSON saves, undo/redo and recovery snapshots.
 - Phase 2: SQLite UUID asset catalog, grid/list browser, metadata/tags/favorites/search/type filters, drag-to-viewport placement, texture operations, named sprite-sheet slicing and ZIP export, 335 original procedural recipes, modular prefab splitting, hierarchical transforms, nested prefab instances and property overrides.
@@ -204,9 +204,9 @@ Successful Gradle packaging produces `app/build/outputs/apk/debug/app-debug.apk`
 ## Validation actually performed
 
 - Eight separately compiled engine/runtime modules and **16 executable core/runtime smoke groups**: passed, using actual JBox2D and Android 34 APIs.
-- Full pinned-toolchain Gradle/Compose build, debug APK/test APK assembly, and JVM unit tasks: passed in CI; exact revisions/results are recorded in the verification ledger.
+- Full pinned-toolchain Gradle/Compose build, debug APK/test APK assembly, and **31 JVM tests with zero failures/skips**: passed in CI at final code revision `053ec45`; exact evidence and genuine APK artifacts are in the verification ledger.
 - Host SQLite and repository/module/XML/wrapper checks: passed.
-- Emulator acceptance is recorded separately in the ledger. Physical phone/tablet/gamepad and sustained-performance checks remain unverified.
+- **15 API 34 emulator tests passed**, including live play, real GLES framebuffer checks, assets and persistence. Physical phone/tablet/gamepad and sustained-performance checks remain unverified.
 
 ## Data safety
 
@@ -559,6 +559,8 @@ Projects retain the previously explained app-private layout under `filesDir/2DWo
 
 ## 6. VERIFICATION TESTS
 
+**Final CI run [36350107741](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36350107741) passed at code revision `053ec45`: full Android/Compose build, 31 JVM tests and 15 API 34 emulator tests, with zero failures or skips.** The genuine editor debug APK and reports are linked in the verification ledger. Physical-device checks remain outstanding.
+
 [PHASE3_VERIFICATION.md](PHASE3_VERIFICATION.md) is the dated evidence ledger: exact CI revisions/runs, passed host checks, authored test inventory, hardware gaps and manual acceptance steps. A test's source existing is not recorded as a test pass.
 
 Host checks:
@@ -619,11 +621,11 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 | `app/src/androidTest/kotlin/world/engine/app/PlayModeTest.kt` | `dd390594c76505d060da4588330a63609ef21915fd9028baaa808206da6716be` |
 | `app/src/main/assets/licenses/JBOX2D.txt` | `2895b20e161e2fcf8ae9cdda59f86cc4e4db9136d5fc453b809ce843bd1d0cd9` |
 | `docs/PHASE2_README.md` | `3708ece381fcec2e27c7ce78cc0e96fb1903187dd977f3f2b02cec1bcd834cf3` |
-| `docs/PHASE3.md` | `861015849dba8afc1a947be82fb8536a3f6c0a86c926cf8f7245004d3c664927` |
+| `docs/PHASE3.md` | `5c540ee656adb0878e2eced515c34648cdc830c084e2b0e60c512fadb97e837c` |
 | `docs/PHASE3_BASELINE.json` | `d19f72593a83976aa20dee09180932f51a16ac38c119ef699f9dd3df1f49d7c8` |
 | `docs/PHASE3_FILES.md` | `generated; not self-hashed` |
 | `docs/PHASE3_SOURCE.md` | `generated; not self-hashed` |
-| `docs/PHASE3_VERIFICATION.md` | `3d1b04d1699ad34621aaa880acb24ff669b6664d587f461c315024f512f20d32` |
+| `docs/PHASE3_VERIFICATION.md` | `0d69c6cc450cf8b2b712da5555ace3374606c9582ebbb26254e5f833e4494d7a` |
 | `editor-animation/src/main/kotlin/world/engine/animationeditor/TimelineEditor.kt` | `9f37aa4d209b30d1a7a950bd3f9b2fb8130d68b83d5a2712745bf80e6c34ae5f` |
 | `editor-ui/src/main/kotlin/world/engine/editor/PlayControls.kt` | `06d2aaf3307ecd1cd0473fd74f6e0eaee912f4539fb347247a5c59027b9a2d1d` |
 | `editor-ui/src/main/kotlin/world/engine/editor/RuntimePanels.kt` | `6ecc7fd603996c83994ec3043e70a454fe08e15e05e22aebeebd61cd14ef5aa3` |
@@ -651,7 +653,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 |---|---|
 | `.github/workflows/android.yml` | `da600dd32a6cb798fcfda2a1cebe9b4185ccac1cbae3c74d0578403ab088c06c` |
 | `.gitignore` | `8dc14c72d0dda33f5b0b71b55bbfd8ebb5d62ac868713d3b0bc1c048c676931b` |
-| `README.md` | `cd0ea11c1162dcac0d2ea1a0a81bb8f710c42774461ffe21130a3f43b4c39e4a` |
+| `README.md` | `890b7436246864f6981834481400fa5723e1e6d41771afa7742a3b3460a2dca0` |
 | `app/build.gradle.kts` | `1f61fb5f336d157f8b89945f6509c0101584771bee513ad4c3126e2e52527a04` |
 | `app/src/androidTest/kotlin/world/engine/app/GlRenderTest.kt` | `def61e6bcf6dd93a949cdaa5908f580a4aae90b449d0e9612ee1b1f0270c0159` |
 | `editor-animation/README.md` | `75e26f1bb73acb29809ab472624578f4ed5525a4e509eb7b8edda5f0889c3853` |
@@ -766,7 +768,7 @@ Compared with the captured end-of-Phase-2 SHA-256 baseline. Generated inventory/
 ````markdown
 # Phase 3 verification ledger
 
-Delivery date: 2026-09-27 (user's local date). Status is evidence-based, not inferred from file presence.
+Final verification date: 2026-09-28 (user's local date). Status is evidence-based, not inferred from file presence.
 
 ## Executed checks
 
@@ -777,8 +779,8 @@ Delivery date: 2026-09-27 (user's local date). Status is evidence-based, not inf
 | Standalone compiler | PASS: math/core/assets/io/animation/physics/render/viewport compiled separately against Android 34 and actual JBox2D |
 | Core smoke execution | PASS: six executable groups |
 | Runtime smoke execution | PASS: ten executable groups against actual JBox2D |
-| Full Gradle/Compose build | PASS at `916ee4d`: debug app and all requested test APKs compiled; JVM tasks passed. Latest hardening revision is undergoing the same CI gate. |
-| Emulator tests | Pending final rerun; the earlier job failed in its shell wrapper before Gradle tests ran |
+| Full Gradle/Compose build | PASS at final code revision `053ec45`: debug app and test APKs compiled. Actual XML summary reports 31 JVM cases, zero failures and zero skipped. |
+| Emulator tests | PASS at `053ec45`: 15 Android API 34 emulator cases, zero failures and zero skipped; app 6, assets 5, IO 3, physics 1. |
 | Physical devices/performance | NOT RUN |
 
 The source-only compiler diagnostic uses Kotlin 1.9.23 from the documented notebook compiler distribution. It is explicitly **not** the pinned Kotlin 1.9.24/Compose/Gradle app build. The full CI app build uses the pinned stack.
@@ -788,9 +790,22 @@ The source-only compiler diagnostic uses Kotlin 1.9.23 from the documented noteb
 - [36348507968](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36348507968): failed Android setup action; no app result claimed.
 - [36348764239](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36348764239): real Gradle compilation exposed a nested Compose receiver access error; corrected by capturing the panel height in its owning scope.
 - [36349040885](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36349040885), `916ee4d`: **compile-and-unit-test passed**, including debug APK and test APK assembly. Device job failed before test execution because its `sh` wrapper does not support `set -o pipefail`; the command now invokes Bash explicitly.
-- The latest runtime safety/event changes are being rerun before final handoff. Final results replace this provisional row, rather than assuming an older green build covers later code.
+- [36349468726](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36349468726), `4e663af`: compile-and-unit-test passed; emulator outcome was not available at the last authenticated observation.
+- [36349701716](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36349701716), `8c16575`: intermediate run; final outcome not retrieved.
+- [36349870370](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36349870370), `3efe814`: **compile-and-unit-test passed**. XML notice: animation 5, core 15, math 3, physics 5, render 3; **31 total, zero failures, zero skipped**. Expanded emulator job `108706942591` was in progress at the last authenticated observation.
+- **Final acceptance: [36350107741](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36350107741), `053ec459d4a06b22719130970669e12db50bf305`: SUCCESS.** Both `compile-and-unit-test` (job `108707019829`) and `device-tests` (job `108707744131`) completed successfully. Their actual XML-result annotations report:
+  - JVM: animation 5, core 15, math 3, physics 5, render 3 — **31 passed, zero failures/skips**.
+  - Android: app 6, assets 5, IO 3, physics 1 — **15 passed, zero failures/skips**.
+  - Includes strengthened live-play step assertions, height-constrained joystick normalization, rotated split-camera framebuffer checks, GL lines, parallax, and the real Bitmap alpha test.
 
-Successful CI builds upload `android-build-and-unit-results` with the genuine debug APK and test reports. The sandbox could not download GitHub's blob-hosted artifact/log redirect (EOF); no local APK file is fabricated. Artifacts can be downloaded from the run page by the repository user.
+The earlier authentication interruption is resolved. Final acceptance is based on authenticated completed-job results and XML summaries, **not** the CLI watcher's exit code. All implementation/configuration/test files in the workspace were compared with the verified remote revision; only delivery documentation differed before the final documentation update.
+
+### Genuine build artifacts
+
+- [Debug APK, build log and JVM reports](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36350107741/artifacts/10942131622) — `android-build-and-unit-results`, 9,497,412-byte ZIP.
+- [Android emulator reports](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36350107741/artifacts/10942730043) — `android-device-results`, 27,691-byte ZIP.
+
+The debug APK is inside the first artifact under `app/build/outputs/apk/debug/`. GitHub authentication and artifact retention apply. The sandbox's earlier blob-host download attempt failed with EOF; no local APK was fabricated. Users can download the genuine artifact from GitHub. This is the editor debug APK, not a signed standalone-game export.
 
 ## Runtime smoke groups that passed
 

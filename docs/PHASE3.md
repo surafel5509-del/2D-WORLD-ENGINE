@@ -111,6 +111,8 @@ Projects retain the previously explained app-private layout under `filesDir/2DWo
 
 ## 6. VERIFICATION TESTS
 
+**Final CI run [36350107741](https://github.com/surafel5509-del/2D-WORLD-ENGINE/actions/runs/36350107741) passed at code revision `053ec45`: full Android/Compose build, 31 JVM tests and 15 API 34 emulator tests, with zero failures or skips.** The genuine editor debug APK and reports are linked in the verification ledger. Physical-device checks remain outstanding.
+
 [PHASE3_VERIFICATION.md](PHASE3_VERIFICATION.md) is the dated evidence ledger: exact CI revisions/runs, passed host checks, authored test inventory, hardware gaps and manual acceptance steps. A test's source existing is not recorded as a test pass.
 
 Host checks:

@@ -4,7 +4,7 @@ Native Android 2D scene editor, written in Kotlin with Jetpack Compose and OpenG
 
 ## Current status
 
-**Phase 3 runtime and authoring source is now implemented. Full Android app build and device acceptance are being checked; see the Phase 3 delivery guide for final status.** Do not treat this as a fully verified or finished Unity-class engine.
+**Phase 3 runtime and authoring source is implemented. The full Android build, 31 JVM tests and 15 API 34 emulator tests passed in CI. Physical-device acceptance and cross-phase sound/particle/script event integrations remain outstanding; see the Phase 3 guide.** Do not treat this as a fully verified or finished Unity-class engine.
 
 - Phase 1: dashboard, project wizard, scene editing, touch viewport, image import, atomic JSON saves, undo/redo and recovery snapshots.
 - Phase 2: SQLite UUID asset catalog, grid/list browser, metadata/tags/favorites/search/type filters, drag-to-viewport placement, texture operations, named sprite-sheet slicing and ZIP export, 335 original procedural recipes, modular prefab splitting, hierarchical transforms, nested prefab instances and property overrides.
@@ -40,9 +40,9 @@ Successful Gradle packaging produces `app/build/outputs/apk/debug/app-debug.apk`
 ## Validation actually performed
 
 - Eight separately compiled engine/runtime modules and **16 executable core/runtime smoke groups**: passed, using actual JBox2D and Android 34 APIs.
-- Full pinned-toolchain Gradle/Compose build, debug APK/test APK assembly, and JVM unit tasks: passed in CI; exact revisions/results are recorded in the verification ledger.
+- Full pinned-toolchain Gradle/Compose build, debug APK/test APK assembly, and **31 JVM tests with zero failures/skips**: passed in CI at final code revision `053ec45`; exact evidence and genuine APK artifacts are in the verification ledger.
 - Host SQLite and repository/module/XML/wrapper checks: passed.
-- Emulator acceptance is recorded separately in the ledger. Physical phone/tablet/gamepad and sustained-performance checks remain unverified.
+- **15 API 34 emulator tests passed**, including live play, real GLES framebuffer checks, assets and persistence. Physical phone/tablet/gamepad and sustained-performance checks remain unverified.
 
 ## Data safety
 
